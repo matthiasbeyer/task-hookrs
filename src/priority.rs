@@ -17,3 +17,16 @@ impl<'a> From<&'a str> for TaskPriority {
         }
     }
 }
+
+impl Into<String> for TaskPriority {
+
+    fn into(self) -> String {
+        String::from(match self {
+            TaskPriority::Low    => "L",
+            TaskPriority::Medium => "M",
+            TaskPriority::High   => "H",
+            TaskPriority::NoPrio => "",
+        })
+    }
+
+}
