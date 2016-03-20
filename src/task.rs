@@ -78,6 +78,46 @@ impl Task {
         })
     }
 
+    pub fn id(&self) -> u64 {
+        self.id
+    }
+
+    pub fn desc(&self) -> &String {
+        &self.desc
+    }
+
+    pub fn entry(&self) -> &DateTime {
+        &self.entry
+    }
+
+    pub fn modified(&self) -> &DateTime {
+        &self.modified
+    }
+
+    pub fn priority(&self) -> TaskPriority {
+        self.priority.clone()
+    }
+
+    pub fn project(&self) -> &Project {
+        &self.project
+    }
+
+    pub fn status(&self) -> &Status {
+        &self.status
+    }
+
+    pub fn tags(&self) -> &Vec<Tag> {
+        &self.tags
+    }
+
+    pub fn uuid(&self) -> &UUID {
+        &self.uuid
+    }
+
+    pub fn urgency(&self) -> Urgency {
+        self.urgency
+    }
+
 }
 
 impl Into<Value> for Task {
