@@ -11,6 +11,7 @@ pub type Tag     = String;
 pub type UUID    = String; // FIXME
 pub type Urgency = f64;
 
+#[derive(Debug, Clone)]
 pub struct Task {
     id: u64,
     desc: String,
