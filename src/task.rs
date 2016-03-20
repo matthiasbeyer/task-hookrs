@@ -83,7 +83,33 @@ impl Task {
 impl Into<Value> for Task {
 
     fn into(self) -> Value {
-        unimplemented!()
+        let id       = Value::U64(self.id);
+        let desc     = Value::String(self.desc);
+        let entry    = Value::String(self.entry);
+        let modified = Value::String(self.modified);
+        let priority = Value::String(self.priority.into());
+        let project  = Value::String(self.project);
+        let status   = Value::String(self.status);
+        let tags     = Value::Array(self.tags
+                                        .into_iter()
+                                        .map(|s| Value::String(String::from(s)))
+                                        .collect());
+        let uuid     = Value::String(self.uuid);
+        let urgency  = Value::F64(self.urgency);
+
+        let mut map = BTreeMap::new();
+        map.insert(String::from("id")       , id);
+        map.insert(String::from("desc")     , desc);
+        map.insert(String::from("entry")    , entry);
+        map.insert(String::from("modified") , modified);
+        map.insert(String::from("priority") , priority);
+        map.insert(String::from("project")  , project);
+        map.insert(String::from("status")   , status);
+        map.insert(String::from("tags")     , tags);
+        map.insert(String::from("uuid")     , uuid);
+        map.insert(String::from("urgency")  , urgency);
+
+        Value::Object(map)
     }
 
 }
