@@ -201,3 +201,40 @@ fn get_urgency(map: &BTreeMap<String, Value>) -> f64 {
     map.get("urgency").unwrap().as_f64().unwrap()
 }
 
+#[cfg(test)]
+mod test {
+    use core::reader::Reader;
+    use core::reader::JsonObjectReader;
+    use super::Task;
+    use priority::TaskPriority;
+    use std::borrow::Borrow;
+
+    #[test]
+    fn test_from_json() {
+        let json = String::from("{\"id\":1,\"description\":\"desc\",\"entry\":\"20150612T164806Z\",\"modified\":\"20160315T215656Z\",\"priority\":\"L\",\"project\":\"someproj\",\"status\":\"pending\",\"tags\":[\"test\",\"task\"],\"uuid\":\"93cfc5fa-2f0c-44e6-bede-c2b1ca7ceff3\",\"urgency\":1.0}");
+        let bytes = json.into_bytes();
+        let mut reader = JsonObjectReader::new(Reader::new(bytes.borrow()));
+
+        let v = reader.next();
+        assert!(v.is_some());
+        let v = v.unwrap();
+
+        let t = Task::from_value(v);
+        assert!(t.is_some());
+        let t = t.unwrap();
+
+        assert_eq!(t.id(), 1);
+        assert_eq!(t.desc().clone(), String::from("desc"));
+        assert_eq!(t.entry().clone(), String::from("20150612T164806Z"));
+        assert_eq!(t.modified().clone(), String::from("20160315T215656Z"));
+        assert_eq!(t.priority(), TaskPriority::Low);
+        assert_eq!(t.project().clone(), String::from("someproj"));
+        assert_eq!(t.status().clone(), String::from("pending"));
+        for n in ["test", "task"].iter() {
+            assert!(t.tags().contains(&String::from(*n)));
+        }
+        assert_eq!(t.uuid().clone(), String::from("93cfc5fa-2f0c-44e6-bede-c2b1ca7ceff3"));
+        assert_eq!(t.urgency() as u64, 1.0 as u64);
+    }
+
+}
