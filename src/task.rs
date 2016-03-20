@@ -30,6 +30,25 @@ pub struct Task {
  */
 impl Task {
 
+    pub fn new(id: u64, desc: String, entry: DateTime, modified: DateTime,
+        priority: TaskPriority, project: Project, status: Status,
+        tags: Vec<Tag>, uuid: UUID, urgency: Urgency)
+        -> Task
+    {
+        Task {
+            id       : id,
+            desc     : desc,
+            entry    : entry,
+            modified : modified,
+            priority : priority,
+            project  : project,
+            status   : status,
+            tags     : tags,
+            uuid     : uuid,
+            urgency  : urgency,
+        }
+    }
+
     pub fn from_value(v: Value) -> Option<Task> {
         if !v.is_object() {
             return None;
