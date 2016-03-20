@@ -4,3 +4,7 @@ version = "0.1.0"
 authors = ["Matthias Beyer <mail@beyermatthias.de>"]
 
 [dependencies]
+log = "0.3.5"
+serde = "0.6.14"
+serde_json = "0.6.0"
+
