@@ -78,6 +78,13 @@ impl Task {
         })
     }
 
+}
+
+impl Into<Value> for Task {
+
+    fn into(self) -> Value {
+        unimplemented!()
+    }
 
 }
 
