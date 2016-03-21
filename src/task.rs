@@ -16,7 +16,7 @@ pub struct Task {
     id: u64,
     desc: String,
     entry: DateTime,
-    modified: DateTime,
+    modified: Option<DateTime>,
     priority: TaskPriority,
     project: Project,
     status: Status,
@@ -31,9 +31,16 @@ pub struct Task {
  */
 impl Task {
 
-    pub fn new(id: u64, desc: String, entry: DateTime, modified: DateTime,
-        priority: TaskPriority, project: Project, status: Status,
-        tags: Vec<Tag>, uuid: UUID, urgency: Urgency)
+    pub fn new(id: u64,
+                desc: String,
+                entry: DateTime,
+                modified: Option<DateTime>,
+                priority: TaskPriority,
+                project: Project,
+                status: Status,
+                tags: Vec<Tag>,
+                uuid: UUID,
+                urgency: Urgency)
         -> Task
     {
         Task {
@@ -57,8 +64,7 @@ impl Task {
 
         let map = v.as_object().unwrap();
 
-        let keys = [ "id", "description", "modified", "priority", "project",
-            "status", "tags", "uuid", "urgency"];
+        let keys = [ "id", "description", "entry", "status", "uuid", "urgency"];
 
         if keys.iter().any(|x| map.contains_key(*x)) {
             return None
@@ -90,8 +96,8 @@ impl Task {
         &self.entry
     }
 
-    pub fn modified(&self) -> &DateTime {
-        &self.modified
+    pub fn modified(&self) -> Option<&DateTime> {
+        self.modified.as_ref()
     }
 
     pub fn priority(&self) -> TaskPriority {
@@ -126,7 +132,6 @@ impl Into<Value> for Task {
         let id       = Value::U64(self.id);
         let desc     = Value::String(self.desc);
         let entry    = Value::String(self.entry);
-        let modified = Value::String(self.modified);
         let priority = Value::String(self.priority.into());
         let project  = Value::String(self.project);
         let status   = Value::String(self.status);
@@ -141,7 +146,9 @@ impl Into<Value> for Task {
         map.insert(String::from("id")       , id);
         map.insert(String::from("desc")     , desc);
         map.insert(String::from("entry")    , entry);
-        map.insert(String::from("modified") , modified);
+        if self.modified.is_some() {
+            map.insert(String::from("modified") , Value::String(self.modified.unwrap()));
+        }
         map.insert(String::from("priority") , priority);
         map.insert(String::from("project")  , project);
         map.insert(String::from("status")   , status);
@@ -166,8 +173,9 @@ fn get_entry(map: &BTreeMap<String, Value>) -> String {
     map.get("entry").unwrap().as_string().map(String::from).unwrap()
 }
 
-fn get_modified(map: &BTreeMap<String, Value>) -> String {
-    map.get("modified").unwrap().as_string().map(String::from).unwrap()
+fn get_modified(map: &BTreeMap<String, Value>) -> Option<String> {
+    map.get("modified")
+        .map(|m| m.as_string().map(String::from).unwrap())
 }
 
 fn get_priority(map: &BTreeMap<String, Value>) -> &str {
@@ -226,7 +234,7 @@ mod test {
         assert_eq!(t.id(), 1);
         assert_eq!(t.desc().clone(), String::from("desc"));
         assert_eq!(t.entry().clone(), String::from("20150612T164806Z"));
-        assert_eq!(t.modified().clone(), String::from("20160315T215656Z"));
+        assert_eq!(t.modified().clone(), Some(String::from("20160315T215656Z")));
         assert_eq!(t.priority(), TaskPriority::Low);
         assert_eq!(t.project().clone(), String::from("someproj"));
         assert_eq!(t.status().clone(), String::from("pending"));
