@@ -239,9 +239,9 @@ mod test {
         assert_eq!(t.id(), 1);
         assert_eq!(t.desc().clone(), String::from("desc"));
         assert_eq!(t.entry().clone(), String::from("20150612T164806Z"));
-        assert_eq!(t.modified().clone(), Some(String::from("20160315T215656Z")));
-        assert_eq!(t.priority(), TaskPriority::Low);
-        assert_eq!(t.project().clone(), String::from("someproj"));
+        assert_eq!(t.modified().clone(), Some(&String::from("20160315T215656Z")));
+        assert_eq!(t.priority(), Some(&TaskPriority::Low));
+        assert_eq!(t.project().clone(), Some(&String::from("someproj")));
         assert_eq!(t.status().clone(), String::from("pending"));
         for n in ["test", "task"].iter() {
             assert!(t.tags().contains(&String::from(*n)));
