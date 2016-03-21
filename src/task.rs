@@ -18,7 +18,7 @@ pub struct Task {
     entry: DateTime,
     modified: Option<DateTime>,
     priority: Option<TaskPriority>,
-    project: Project,
+    project: Option<Project>,
     status: Status,
     tags: Vec<Tag>,
     uuid: UUID,
@@ -36,7 +36,7 @@ impl Task {
                 entry: DateTime,
                 modified: Option<DateTime>,
                 priority: Option<TaskPriority>,
-                project: Project,
+                project: Option<Project>,
                 status: Status,
                 tags: Vec<Tag>,
                 uuid: UUID,
@@ -104,8 +104,8 @@ impl Task {
         self.priority.as_ref()
     }
 
-    pub fn project(&self) -> &Project {
-        &self.project
+    pub fn project(&self) -> Option<&Project> {
+        self.project.as_ref()
     }
 
     pub fn status(&self) -> &Status {
@@ -132,7 +132,6 @@ impl Into<Value> for Task {
         let id       = Value::U64(self.id);
         let desc     = Value::String(self.desc);
         let entry    = Value::String(self.entry);
-        let project  = Value::String(self.project);
         let status   = Value::String(self.status);
         let tags     = Value::Array(self.tags
                                         .into_iter()
@@ -151,7 +150,9 @@ impl Into<Value> for Task {
         if self.priority.is_some() {
             map.insert(String::from("priority") , Value::String(self.priority.unwrap().into()));
         }
-        map.insert(String::from("project")  , project);
+        if self.project.is_some() {
+            map.insert(String::from("project"), Value::String(self.project.unwrap()));
+        }
         map.insert(String::from("status")   , status);
         map.insert(String::from("tags")     , tags);
         map.insert(String::from("uuid")     , uuid);
@@ -185,8 +186,9 @@ fn get_priority(map: &BTreeMap<String, Value>) -> Option<TaskPriority> {
         .map(|s| TaskPriority::from(&s[..]))
 }
 
-fn get_project(map: &BTreeMap<String, Value>) -> String {
-    map.get("project").unwrap().as_string().map(String::from).unwrap()
+fn get_project(map: &BTreeMap<String, Value>) -> Option<String> {
+    map.get("project")
+        .map(|p| p.as_string().map(String::from).unwrap())
 }
 
 fn get_status(map: &BTreeMap<String, Value>) -> String {
