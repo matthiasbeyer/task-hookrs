@@ -65,12 +65,6 @@ impl Task {
 
         let map = v.as_object().unwrap();
 
-        let keys = [ "id", "description", "entry", "status", "uuid", "urgency"];
-
-        if keys.iter().any(|x| map.contains_key(*x)) {
-            return None
-        }
-
         Some(Task {
             id       : get_id(&map),
             desc     : get_desc(&map),
