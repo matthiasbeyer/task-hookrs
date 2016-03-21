@@ -17,7 +17,7 @@ pub struct Task {
     desc: String,
     entry: DateTime,
     modified: Option<DateTime>,
-    priority: TaskPriority,
+    priority: Option<TaskPriority>,
     project: Project,
     status: Status,
     tags: Vec<Tag>,
@@ -35,7 +35,7 @@ impl Task {
                 desc: String,
                 entry: DateTime,
                 modified: Option<DateTime>,
-                priority: TaskPriority,
+                priority: Option<TaskPriority>,
                 project: Project,
                 status: Status,
                 tags: Vec<Tag>,
@@ -75,7 +75,7 @@ impl Task {
             desc     : get_desc(&map),
             entry    : get_entry(&map),
             modified : get_modified(&map),
-            priority : TaskPriority::from(get_priority(&map)),
+            priority : get_priority(&map),
             project  : get_project(&map),
             status   : get_status(&map),
             tags     : get_tags(&map),
@@ -100,8 +100,8 @@ impl Task {
         self.modified.as_ref()
     }
 
-    pub fn priority(&self) -> TaskPriority {
-        self.priority.clone()
+    pub fn priority(&self) -> Option<&TaskPriority> {
+        self.priority.as_ref()
     }
 
     pub fn project(&self) -> &Project {
@@ -132,7 +132,6 @@ impl Into<Value> for Task {
         let id       = Value::U64(self.id);
         let desc     = Value::String(self.desc);
         let entry    = Value::String(self.entry);
-        let priority = Value::String(self.priority.into());
         let project  = Value::String(self.project);
         let status   = Value::String(self.status);
         let tags     = Value::Array(self.tags
@@ -149,7 +148,9 @@ impl Into<Value> for Task {
         if self.modified.is_some() {
             map.insert(String::from("modified") , Value::String(self.modified.unwrap()));
         }
-        map.insert(String::from("priority") , priority);
+        if self.priority.is_some() {
+            map.insert(String::from("priority") , Value::String(self.priority.unwrap().into()));
+        }
         map.insert(String::from("project")  , project);
         map.insert(String::from("status")   , status);
         map.insert(String::from("tags")     , tags);
@@ -178,8 +179,10 @@ fn get_modified(map: &BTreeMap<String, Value>) -> Option<String> {
         .map(|m| m.as_string().map(String::from).unwrap())
 }
 
-fn get_priority(map: &BTreeMap<String, Value>) -> &str {
-    map.get("priority").unwrap().as_string().unwrap()
+fn get_priority(map: &BTreeMap<String, Value>) -> Option<TaskPriority> {
+    map.get("priority")
+        .map(|m| m.as_string().map(String::from).unwrap())
+        .map(|s| TaskPriority::from(&s[..]))
 }
 
 fn get_project(map: &BTreeMap<String, Value>) -> String {
