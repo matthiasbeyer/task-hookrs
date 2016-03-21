@@ -1,10 +1,11 @@
 use std::collections::BTreeMap;
 
+use chrono::DateTime;
+use chrono::UTC;
 use serde_json::value::Value;
 
 use priority::TaskPriority;
 
-pub type DateTime= String; // FIXME
 pub type Project = String;
 pub type Status  = String;
 pub type Tag     = String;
@@ -15,8 +16,8 @@ pub type Urgency = f64;
 pub struct Task {
     id: u64,
     desc: String,
-    entry: DateTime,
-    modified: Option<DateTime>,
+    entry: DateTime<UTC>,
+    modified: Option<DateTime<UTC>>,
     priority: Option<TaskPriority>,
     project: Option<Project>,
     status: Status,
@@ -33,8 +34,8 @@ impl Task {
 
     pub fn new(id: u64,
                 desc: String,
-                entry: DateTime,
-                modified: Option<DateTime>,
+                entry: DateTime<UTC>,
+                modified: Option<DateTime<UTC>>,
                 priority: Option<TaskPriority>,
                 project: Option<Project>,
                 status: Status,
@@ -65,10 +66,16 @@ impl Task {
 
         let map = v.as_object().unwrap();
 
+        let entry_dt = get_entry(&map);
+        if entry_dt.is_none() {
+            return None;
+        }
+        let entry_dt = entry_dt.unwrap();
+
         Some(Task {
             id       : get_id(&map),
             desc     : get_desc(&map),
-            entry    : get_entry(&map),
+            entry    : entry_dt,
             modified : get_modified(&map),
             priority : get_priority(&map),
             project  : get_project(&map),
@@ -87,11 +94,11 @@ impl Task {
         &self.desc
     }
 
-    pub fn entry(&self) -> &DateTime {
+    pub fn entry(&self) -> &DateTime<UTC> {
         &self.entry
     }
 
-    pub fn modified(&self) -> Option<&DateTime> {
+    pub fn modified(&self) -> Option<&DateTime<UTC>> {
         self.modified.as_ref()
     }
 
@@ -126,7 +133,6 @@ impl Into<Value> for Task {
     fn into(self) -> Value {
         let id       = Value::U64(self.id);
         let desc     = Value::String(self.desc);
-        let entry    = Value::String(self.entry);
         let status   = Value::String(self.status);
         let tags     = Value::Array(self.tags
                                         .into_iter()
@@ -138,9 +144,13 @@ impl Into<Value> for Task {
         let mut map = BTreeMap::new();
         map.insert(String::from("id")       , id);
         map.insert(String::from("desc")     , desc);
-        map.insert(String::from("entry")    , entry);
+        {
+            let v = Value::String(format!("{:?}", self.entry));
+            map.insert(String::from("entry"), v);
+        }
         if self.modified.is_some() {
-            map.insert(String::from("modified") , Value::String(self.modified.unwrap()));
+            let v = Value::String(format!("{:?}", self.modified.unwrap()));
+            map.insert(String::from("modified"), v);
         }
         if self.priority.is_some() {
             map.insert(String::from("priority") , Value::String(self.priority.unwrap().into()));
@@ -166,13 +176,17 @@ fn get_desc(map: &BTreeMap<String, Value>) -> String {
     map.get("description").unwrap().as_string().map(String::from).unwrap()
 }
 
-fn get_entry(map: &BTreeMap<String, Value>) -> String {
-    map.get("entry").unwrap().as_string().map(String::from).unwrap()
+fn get_entry(map: &BTreeMap<String, Value>) -> Option<DateTime<UTC>> {
+    map.get("entry")
+        .unwrap()
+        .as_string()
+        .and_then(|s| String::from(s).parse::<DateTime<UTC>>().ok())
 }
 
-fn get_modified(map: &BTreeMap<String, Value>) -> Option<String> {
+fn get_modified(map: &BTreeMap<String, Value>) -> Option<DateTime<UTC>> {
     map.get("modified")
-        .map(|m| m.as_string().map(String::from).unwrap())
+        .and_then(|m| m.as_string())
+        .and_then(|s| String::from(s).parse::<DateTime<UTC>>().ok())
 }
 
 fn get_priority(map: &BTreeMap<String, Value>) -> Option<TaskPriority> {
@@ -213,6 +227,9 @@ fn get_urgency(map: &BTreeMap<String, Value>) -> f64 {
 mod test {
     extern crate env_logger;
 
+    use chrono::DateTime;
+    use chrono::UTC;
+
     use core::reader::Reader;
     use core::reader::JsonObjectReader;
     use super::Task;
@@ -239,8 +256,8 @@ mod test {
 
         assert_eq!(t.id(), 1);
         assert_eq!(t.desc().clone(), String::from("desc"));
-        assert_eq!(t.entry().clone(), String::from("20150612T164806Z"));
-        assert_eq!(t.modified().clone(), Some(&String::from("20160315T215656Z")));
+        assert_eq!(t.entry().clone(), String::from("20150612T164806Z").parse::<DateTime<UTC>>().unwrap());
+        assert_eq!(t.modified().clone(), String::from("20160315T215656Z").parse::<DateTime<UTC>>().ok().as_ref());
         assert_eq!(t.priority(), Some(&TaskPriority::Low));
         assert_eq!(t.project().clone(), Some(&String::from("someproj")));
         assert_eq!(t.status().clone(), String::from("pending"));
