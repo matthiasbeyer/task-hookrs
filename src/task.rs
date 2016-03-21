@@ -59,6 +59,7 @@ impl Task {
 
     pub fn from_value(v: Value) -> Option<Task> {
         if !v.is_object() {
+            debug!("JSON Value is not an object, cannot parse into Task");
             return None;
         }
 
@@ -216,6 +217,8 @@ fn get_urgency(map: &BTreeMap<String, Value>) -> f64 {
 
 #[cfg(test)]
 mod test {
+    extern crate env_logger;
+
     use core::reader::Reader;
     use core::reader::JsonObjectReader;
     use super::Task;
@@ -224,6 +227,8 @@ mod test {
 
     #[test]
     fn test_from_json() {
+        env_logger::init().unwrap();
+
         let json = String::from("{\"id\":1,\"description\":\"desc\",\"entry\":\"20150612T164806Z\",\"modified\":\"20160315T215656Z\",\"priority\":\"L\",\"project\":\"someproj\",\"status\":\"pending\",\"tags\":[\"test\",\"task\"],\"uuid\":\"93cfc5fa-2f0c-44e6-bede-c2b1ca7ceff3\",\"urgency\":1.0}");
         let bytes = json.into_bytes();
         let mut reader = JsonObjectReader::new(Reader::new(bytes.borrow()));
@@ -235,6 +240,8 @@ mod test {
         let t = Task::from_value(v);
         assert!(t.is_some());
         let t = t.unwrap();
+
+        debug!("Task created successfully!");
 
         assert_eq!(t.id(), 1);
         assert_eq!(t.desc().clone(), String::from("desc"));
