@@ -3,13 +3,13 @@ use std::collections::BTreeMap;
 use chrono::DateTime;
 use chrono::UTC;
 use serde_json::value::Value;
+use uuid::Uuid;
 
 use priority::TaskPriority;
 
 pub type Project = String;
 pub type Status  = String;
 pub type Tag     = String;
-pub type UUID    = String; // FIXME
 pub type Urgency = f64;
 
 #[derive(Debug, Clone)]
@@ -22,7 +22,7 @@ pub struct Task {
     project: Option<Project>,
     status: Status,
     tags: Vec<Tag>,
-    uuid: UUID,
+    uuid: Uuid,
     urgency: Urgency,
 }
 
@@ -40,7 +40,7 @@ impl Task {
                 project: Option<Project>,
                 status: Status,
                 tags: Vec<Tag>,
-                uuid: UUID,
+                uuid: Uuid,
                 urgency: Urgency)
         -> Task
     {
@@ -118,7 +118,7 @@ impl Task {
         &self.tags
     }
 
-    pub fn uuid(&self) -> &UUID {
+    pub fn uuid(&self) -> &Uuid {
         &self.uuid
     }
 
@@ -138,7 +138,7 @@ impl Into<Value> for Task {
                                         .into_iter()
                                         .map(|s| Value::String(String::from(s)))
                                         .collect());
-        let uuid     = Value::String(self.uuid);
+        let uuid     = Value::String(format!("{}", self.uuid));
         let urgency  = Value::F64(self.urgency);
 
         let mut map = BTreeMap::new();
@@ -215,8 +215,12 @@ fn get_tags(map: &BTreeMap<String, Value>) -> Vec<Tag> {
         .collect()
 }
 
-fn get_uuid(map: &BTreeMap<String, Value>) -> String {
-    map.get("uuid").unwrap().as_string().map(String::from).unwrap()
+fn get_uuid(map: &BTreeMap<String, Value>) -> Uuid {
+    map.get("uuid")
+        .unwrap()
+        .as_string()
+        .and_then(|s| Uuid::parse_str(s).ok())
+        .unwrap()
 }
 
 fn get_urgency(map: &BTreeMap<String, Value>) -> f64 {
