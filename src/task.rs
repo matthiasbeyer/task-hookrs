@@ -184,10 +184,12 @@ fn get_desc(map: &BTreeMap<String, Value>) -> String {
 
 fn get_entry(map: &BTreeMap<String, Value>) -> Result<DateTime<UTC>> {
     if let Some(s) = map.get("entry").unwrap().as_string() {
+        trace!("Found 'entry': {:?}", s);
         String::from(s)
             .parse::<DateTime<UTC>>()
             .map_err(|e| TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e))))
     } else {
+        trace!("No 'entry'");
         Err(TaskError::new(TaskErrorKind::ParserError, None))
     }
 }
