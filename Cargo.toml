@@ -8,6 +8,7 @@ chrono = "0.2.20"
 log = "0.3.5"
 serde = "0.6.14"
 serde_json = "0.6.0"
+uuid = "0.1.18"
 
 [dev-dependencies]
 env_logger = "0.3.2"
