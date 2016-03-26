@@ -5,7 +5,10 @@ use chrono::UTC;
 use serde_json::value::Value;
 use uuid::Uuid;
 
+use error::TaskError;
+use error::TaskErrorKind;
 use priority::TaskPriority;
+use result::Result;
 
 pub type Project = String;
 pub type Status  = String;
@@ -58,21 +61,24 @@ impl Task {
         }
     }
 
-    pub fn from_value(v: Value) -> Option<Task> {
+    pub fn from_value(v: Value) -> Result<Task> {
         if !v.is_object() {
-            debug!("JSON Value is not an object, cannot parse into Task");
-            return None;
+            trace!("JSON Value is not an object, cannot parse into Task");
+            return Err(TaskError::new(TaskErrorKind::ParserError, None));
         }
+        trace!("Found object");
 
         let map = v.as_object().unwrap();
+        trace!("map = {:?}", map);
 
         let entry_dt = get_entry(&map);
-        if entry_dt.is_none() {
-            return None;
+        trace!("entry_dt = {:?}", entry_dt);
+        if entry_dt.is_err() {
+            return Err(entry_dt.err().unwrap());
         }
         let entry_dt = entry_dt.unwrap();
 
-        Some(Task {
+        Ok(Task {
             id       : get_id(&map),
             desc     : get_desc(&map),
             entry    : entry_dt,
@@ -176,11 +182,14 @@ fn get_desc(map: &BTreeMap<String, Value>) -> String {
     map.get("description").unwrap().as_string().map(String::from).unwrap()
 }
 
-fn get_entry(map: &BTreeMap<String, Value>) -> Option<DateTime<UTC>> {
-    map.get("entry")
-        .unwrap()
-        .as_string()
-        .and_then(|s| String::from(s).parse::<DateTime<UTC>>().ok())
+fn get_entry(map: &BTreeMap<String, Value>) -> Result<DateTime<UTC>> {
+    if let Some(s) = map.get("entry").unwrap().as_string() {
+        String::from(s)
+            .parse::<DateTime<UTC>>()
+            .map_err(|e| TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e))))
+    } else {
+        Err(TaskError::new(TaskErrorKind::ParserError, None))
+    }
 }
 
 fn get_modified(map: &BTreeMap<String, Value>) -> Option<DateTime<UTC>> {
@@ -230,9 +239,11 @@ fn get_urgency(map: &BTreeMap<String, Value>) -> f64 {
 #[cfg(test)]
 mod test {
     extern crate env_logger;
+    extern crate uuid;
 
     use chrono::DateTime;
     use chrono::UTC;
+    use uuid::Uuid;
 
     use core::reader::Reader;
     use core::reader::JsonObjectReader;
@@ -252,8 +263,10 @@ mod test {
         assert!(v.is_some());
         let v = v.unwrap();
 
+        debug!("{:?}", v);
         let t = Task::from_value(v);
-        assert!(t.is_some());
+        debug!("{:?}", t);
+        assert!(t.is_ok());
         let t = t.unwrap();
 
         debug!("Task created successfully!");
@@ -268,7 +281,7 @@ mod test {
         for n in ["test", "task"].iter() {
             assert!(t.tags().contains(&String::from(*n)));
         }
-        assert_eq!(t.uuid().clone(), String::from("93cfc5fa-2f0c-44e6-bede-c2b1ca7ceff3"));
+        assert_eq!(t.uuid().clone(), Uuid::parse_str("93cfc5fa-2f0c-44e6-bede-c2b1ca7ceff3").unwrap());
         assert_eq!(t.urgency() as u64, 1.0 as u64);
     }
 
