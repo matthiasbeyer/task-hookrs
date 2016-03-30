@@ -1,9 +1,7 @@
 use std::error::Error;
 use std::fmt::Error as FmtError;
 use std::clone::Clone;
-use std::fmt::{Debug, Display, Formatter};
-use std::fmt;
-use std::convert::From;
+use std::fmt::{Display, Formatter};
 
 /**
  * Kind of store error

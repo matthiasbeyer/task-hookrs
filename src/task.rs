@@ -1,9 +1,6 @@
 use std::collections::BTreeMap;
 
 use chrono::naive::datetime::NaiveDateTime;
-use chrono::offset::TimeZone;
-use chrono::offset::fixed::FixedOffset;
-use chrono::UTC;
 use serde_json::value::Value;
 use uuid::Uuid;
 
@@ -257,7 +254,6 @@ mod test {
     extern crate uuid;
 
     use chrono::NaiveDateTime;
-    use chrono::UTC;
     use uuid::Uuid;
 
     use core::reader::Reader;
@@ -267,15 +263,13 @@ mod test {
     use priority::TaskPriority;
     use std::borrow::Borrow;
 
-    use std::error::Error;
-
     fn mkdate(s: &str) -> NaiveDateTime {
         NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE).unwrap()
     }
 
     #[test]
     fn test_from_json() {
-        env_logger::init();
+        env_logger::init().ok();
 
         let json = String::from("{\"id\":1,\"description\":\"desc\",\"entry\":\"20150612T164806Z\",\"modified\":\"20160315T215656Z\",\"priority\":\"L\",\"project\":\"someproj\",\"status\":\"pending\",\"tags\":[\"test\",\"task\"],\"uuid\":\"93cfc5fa-2f0c-44e6-bede-c2b1ca7ceff3\",\"urgency\":1.0}");
         let bytes = json.into_bytes();
@@ -309,7 +303,7 @@ mod test {
 
     #[test]
     fn test_from_json_2() {
-        env_logger::init();
+        env_logger::init().ok();
 
         let json = String::from("{\"id\":123,\"description\":\"Read some papers\",\"entry\":\"20160320T214333Z\",\"modified\":\"20160320T214357Z\",\"project\":\"self.learning\",\"status\":\"pending\",\"tags\":[\"learning\",\"edu\",\"read\"],\"uuid\":\"b4e58537-96f6-4f87-bb12-ea760ca838a6\",\"urgency\":1.04931}");
         let bytes = json.into_bytes();
