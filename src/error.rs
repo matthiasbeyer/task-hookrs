@@ -9,11 +9,13 @@ use std::fmt::{Display, Formatter};
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum TaskErrorKind {
     ParserError,
+    NoStatus,
 }
 
 fn store_error_type_as_str(e: &TaskErrorKind) -> &'static str {
     match e {
         &TaskErrorKind::ParserError => "Parser Error",
+        &TaskErrorKind::NoStatus    => "Task status is missing",
     }
 }
 

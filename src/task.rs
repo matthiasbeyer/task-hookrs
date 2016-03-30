@@ -8,9 +8,9 @@ use error::TaskError;
 use error::TaskErrorKind;
 use priority::TaskPriority;
 use result::Result;
+use status::TaskStatus;
 
 pub type Project = String;
-pub type Status  = String;
 pub type Tag     = String;
 pub type Urgency = f64;
 
@@ -24,7 +24,7 @@ pub struct Task {
     modified: Option<NaiveDateTime>,
     priority: Option<TaskPriority>,
     project: Option<Project>,
-    status: Status,
+    status: TaskStatus,
     tags: Vec<Tag>,
     uuid: Uuid,
     urgency: Urgency,
@@ -42,7 +42,7 @@ impl Task {
                 modified: Option<NaiveDateTime>,
                 priority: Option<TaskPriority>,
                 project: Option<Project>,
-                status: Status,
+                status: TaskStatus,
                 tags: Vec<Tag>,
                 uuid: Uuid,
                 urgency: Urgency)
@@ -85,6 +85,14 @@ impl Task {
             None         => None,
         };
 
+        let status = match get_status(&map) {
+            Some(s) => s,
+            None => {
+                let nstat = TaskError::new(TaskErrorKind::NoStatus, None);
+                return Err(TaskError::new(TaskErrorKind::ParserError, Some(Box::new(nstat))));
+            }
+        };
+
         Ok(Task {
             id       : get_id(&map),
             desc     : get_desc(&map),
@@ -92,7 +100,7 @@ impl Task {
             modified : modified_dt,
             priority : get_priority(&map),
             project  : get_project(&map),
-            status   : get_status(&map),
+            status   : status,
             tags     : get_tags(&map),
             uuid     : get_uuid(&map),
             urgency  : get_urgency(&map),
@@ -123,7 +131,7 @@ impl Task {
         self.project.as_ref()
     }
 
-    pub fn status(&self) -> &Status {
+    pub fn status(&self) -> &TaskStatus {
         &self.status
     }
 
@@ -146,7 +154,7 @@ impl Into<Value> for Task {
     fn into(self) -> Value {
         let id       = Value::U64(self.id);
         let desc     = Value::String(self.desc);
-        let status   = Value::String(self.status);
+        let status   = Value::String(self.status.into());
         let tags     = Value::Array(self.tags
                                         .into_iter()
                                         .map(|s| Value::String(String::from(s)))
@@ -221,8 +229,8 @@ fn get_project(map: &BTreeMap<String, Value>) -> Option<String> {
         .map(|p| p.as_string().map(String::from).unwrap())
 }
 
-fn get_status(map: &BTreeMap<String, Value>) -> String {
-    map.get("status").unwrap().as_string().map(String::from).unwrap()
+fn get_status(map: &BTreeMap<String, Value>) -> Option<TaskStatus> {
+    map.get("status").unwrap().as_string().map(TaskStatus::from_str).unwrap()
 }
 
 fn get_tags(map: &BTreeMap<String, Value>) -> Vec<Tag> {
@@ -261,6 +269,7 @@ mod test {
     use super::Task;
     use super::TASKWARRIOR_DATETIME_TEMPLATE;
     use priority::TaskPriority;
+    use status::TaskStatus;
     use std::borrow::Borrow;
 
     fn mkdate(s: &str) -> NaiveDateTime {
@@ -293,7 +302,7 @@ mod test {
         assert_eq!(t.modified().clone(), Some(&mkdate("20160315T215656Z")));
         assert_eq!(t.priority(), Some(&TaskPriority::Low));
         assert_eq!(t.project().clone(), Some(&String::from("someproj")));
-        assert_eq!(t.status().clone(), String::from("pending"));
+        assert_eq!(t.status().clone(), TaskStatus::from_str("pending").unwrap());
         for n in ["test", "task"].iter() {
             assert!(t.tags().contains(&String::from(*n)));
         }
@@ -327,7 +336,7 @@ mod test {
         assert_eq!(t.modified().clone(), Some(&mkdate("20160320T214357Z")));
         assert_eq!(t.priority(), None);
         assert_eq!(t.project().clone(), Some(&String::from("self.learning")));
-        assert_eq!(t.status().clone(), String::from("pending"));
+        assert_eq!(t.status().clone(), TaskStatus::from_str("pending").unwrap());
         for n in ["learning", "edu", "read"].iter() {
             assert!(t.tags().contains(&String::from(*n)));
         }
