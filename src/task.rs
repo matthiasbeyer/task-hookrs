@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
 
-use chrono::DateTime;
+use chrono::naive::datetime::NaiveDateTime;
+use chrono::offset::TimeZone;
+use chrono::offset::fixed::FixedOffset;
 use chrono::UTC;
 use serde_json::value::Value;
 use uuid::Uuid;
@@ -15,12 +17,14 @@ pub type Status  = String;
 pub type Tag     = String;
 pub type Urgency = f64;
 
+pub static TASKWARRIOR_DATETIME_TEMPLATE : &'static str = "%Y%m%dT%H%M%SZ";
+
 #[derive(Debug, Clone)]
 pub struct Task {
     id: u64,
     desc: String,
-    entry: DateTime<UTC>,
-    modified: Option<DateTime<UTC>>,
+    entry: NaiveDateTime,
+    modified: Option<NaiveDateTime>,
     priority: Option<TaskPriority>,
     project: Option<Project>,
     status: Status,
@@ -37,8 +41,8 @@ impl Task {
 
     pub fn new(id: u64,
                 desc: String,
-                entry: DateTime<UTC>,
-                modified: Option<DateTime<UTC>>,
+                entry: NaiveDateTime,
+                modified: Option<NaiveDateTime>,
                 priority: Option<TaskPriority>,
                 project: Option<Project>,
                 status: Status,
@@ -78,11 +82,17 @@ impl Task {
         }
         let entry_dt = entry_dt.unwrap();
 
+        let modified_dt = match get_modified(&map) {
+            Some(Err(e)) => return Err(e),
+            Some(Ok(x))  => Some(x),
+            None         => None,
+        };
+
         Ok(Task {
             id       : get_id(&map),
             desc     : get_desc(&map),
             entry    : entry_dt,
-            modified : get_modified(&map),
+            modified : modified_dt,
             priority : get_priority(&map),
             project  : get_project(&map),
             status   : get_status(&map),
@@ -100,11 +110,11 @@ impl Task {
         &self.desc
     }
 
-    pub fn entry(&self) -> &DateTime<UTC> {
+    pub fn entry(&self) -> &NaiveDateTime {
         &self.entry
     }
 
-    pub fn modified(&self) -> Option<&DateTime<UTC>> {
+    pub fn modified(&self) -> Option<&NaiveDateTime> {
         self.modified.as_ref()
     }
 
@@ -182,11 +192,10 @@ fn get_desc(map: &BTreeMap<String, Value>) -> String {
     map.get("description").unwrap().as_string().map(String::from).unwrap()
 }
 
-fn get_entry(map: &BTreeMap<String, Value>) -> Result<DateTime<UTC>> {
+fn get_entry(map: &BTreeMap<String, Value>) -> Result<NaiveDateTime> {
     if let Some(s) = map.get("entry").unwrap().as_string() {
         trace!("Found 'entry': {:?}", s);
-        String::from(s)
-            .parse::<DateTime<UTC>>()
+        NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE)
             .map_err(|e| TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e))))
     } else {
         trace!("No 'entry'");
@@ -194,10 +203,14 @@ fn get_entry(map: &BTreeMap<String, Value>) -> Result<DateTime<UTC>> {
     }
 }
 
-fn get_modified(map: &BTreeMap<String, Value>) -> Option<DateTime<UTC>> {
-    map.get("modified")
-        .and_then(|m| m.as_string())
-        .and_then(|s| String::from(s).parse::<DateTime<UTC>>().ok())
+fn get_modified(map: &BTreeMap<String, Value>) -> Option<Result<NaiveDateTime>> {
+    if let Some(modif) = map.get("modified").and_then(|m| m.as_string()) {
+        Some(NaiveDateTime::parse_from_str(modif, TASKWARRIOR_DATETIME_TEMPLATE)
+            .map_err(|e| TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e)))))
+
+    } else {
+        None
+    }
 }
 
 fn get_priority(map: &BTreeMap<String, Value>) -> Option<TaskPriority> {
@@ -243,15 +256,18 @@ mod test {
     extern crate env_logger;
     extern crate uuid;
 
-    use chrono::DateTime;
+    use chrono::NaiveDateTime;
     use chrono::UTC;
     use uuid::Uuid;
 
     use core::reader::Reader;
     use core::reader::JsonObjectReader;
     use super::Task;
+    use super::TASKWARRIOR_DATETIME_TEMPLATE;
     use priority::TaskPriority;
     use std::borrow::Borrow;
+
+    use std::error::Error;
 
     #[test]
     fn test_from_json() {
@@ -275,8 +291,8 @@ mod test {
 
         assert_eq!(t.id(), 1);
         assert_eq!(t.desc().clone(), String::from("desc"));
-        assert_eq!(t.entry().clone(), String::from("20150612T164806Z").parse::<DateTime<UTC>>().unwrap());
-        assert_eq!(t.modified().clone(), String::from("20160315T215656Z").parse::<DateTime<UTC>>().ok().as_ref());
+        assert_eq!(t.entry().clone(), NaiveDateTime::parse_from_str("20150612T164806Z", TASKWARRIOR_DATETIME_TEMPLATE).unwrap());
+        assert_eq!(t.modified().clone(), NaiveDateTime::parse_from_str("20160315T215656Z", TASKWARRIOR_DATETIME_TEMPLATE).ok().as_ref());
         assert_eq!(t.priority(), Some(&TaskPriority::Low));
         assert_eq!(t.project().clone(), Some(&String::from("someproj")));
         assert_eq!(t.status().clone(), String::from("pending"));
