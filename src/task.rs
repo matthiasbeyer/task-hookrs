@@ -269,9 +269,13 @@ mod test {
 
     use std::error::Error;
 
+    fn mkdate(s: &str) -> NaiveDateTime {
+        NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE).unwrap()
+    }
+
     #[test]
     fn test_from_json() {
-        env_logger::init().unwrap();
+        env_logger::init();
 
         let json = String::from("{\"id\":1,\"description\":\"desc\",\"entry\":\"20150612T164806Z\",\"modified\":\"20160315T215656Z\",\"priority\":\"L\",\"project\":\"someproj\",\"status\":\"pending\",\"tags\":[\"test\",\"task\"],\"uuid\":\"93cfc5fa-2f0c-44e6-bede-c2b1ca7ceff3\",\"urgency\":1.0}");
         let bytes = json.into_bytes();
@@ -291,8 +295,8 @@ mod test {
 
         assert_eq!(t.id(), 1);
         assert_eq!(t.desc().clone(), String::from("desc"));
-        assert_eq!(t.entry().clone(), NaiveDateTime::parse_from_str("20150612T164806Z", TASKWARRIOR_DATETIME_TEMPLATE).unwrap());
-        assert_eq!(t.modified().clone(), NaiveDateTime::parse_from_str("20160315T215656Z", TASKWARRIOR_DATETIME_TEMPLATE).ok().as_ref());
+        assert_eq!(t.entry().clone(), mkdate("20150612T164806Z"));
+        assert_eq!(t.modified().clone(), Some(&mkdate("20160315T215656Z")));
         assert_eq!(t.priority(), Some(&TaskPriority::Low));
         assert_eq!(t.project().clone(), Some(&String::from("someproj")));
         assert_eq!(t.status().clone(), String::from("pending"));
@@ -301,6 +305,40 @@ mod test {
         }
         assert_eq!(t.uuid().clone(), Uuid::parse_str("93cfc5fa-2f0c-44e6-bede-c2b1ca7ceff3").unwrap());
         assert_eq!(t.urgency() as u64, 1.0 as u64);
+    }
+
+    #[test]
+    fn test_from_json_2() {
+        env_logger::init();
+
+        let json = String::from("{\"id\":123,\"description\":\"Read some papers\",\"entry\":\"20160320T214333Z\",\"modified\":\"20160320T214357Z\",\"project\":\"self.learning\",\"status\":\"pending\",\"tags\":[\"learning\",\"edu\",\"read\"],\"uuid\":\"b4e58537-96f6-4f87-bb12-ea760ca838a6\",\"urgency\":1.04931}");
+        let bytes = json.into_bytes();
+        let mut reader = JsonObjectReader::new(Reader::new(bytes.borrow()));
+
+        let v = reader.next();
+        assert!(v.is_some());
+        let v = v.unwrap();
+
+        debug!("{:?}", v);
+        let t = Task::from_value(v);
+        debug!("{:?}", t);
+        assert!(t.is_ok());
+        let t = t.unwrap();
+
+        debug!("Task created successfully!");
+
+        assert_eq!(t.id(), 123);
+        assert_eq!(t.desc().clone(), String::from("Read some papers"));
+        assert_eq!(t.entry().clone(), mkdate("20160320T214333Z"));
+        assert_eq!(t.modified().clone(), Some(&mkdate("20160320T214357Z")));
+        assert_eq!(t.priority(), None);
+        assert_eq!(t.project().clone(), Some(&String::from("self.learning")));
+        assert_eq!(t.status().clone(), String::from("pending"));
+        for n in ["learning", "edu", "read"].iter() {
+            assert!(t.tags().contains(&String::from(*n)));
+        }
+        assert_eq!(t.uuid().clone(), Uuid::parse_str("b4e58537-96f6-4f87-bb12-ea760ca838a6").unwrap());
+        assert_eq!(t.urgency() as u64, 1.04931 as u64);
     }
 
 }
