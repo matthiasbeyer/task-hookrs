@@ -185,7 +185,7 @@ impl Task {
 
 impl Serialize for Task {
 
-    fn serialize<S>(&self, serializer: &mut S) -> RResult<(), SerdeError>
+    fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
         where S: Serializer
     {
         serializer.serialize_struct("Task", TaskVisitor {
@@ -203,7 +203,7 @@ struct TaskVisitor<'a> {
 
 impl<'a> MapVisitor for TaskVisitor<'a> {
 
-    fn visit<S>(&mut self, serializer: &mut S) -> RResult<Option<()>, SerdeError>
+    fn visit<S>(&mut self, serializer: &mut S) -> RResult<Option<()>, S::Error>
         where S: Serializer
     {
         match self.state {
