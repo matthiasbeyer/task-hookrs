@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use std::result::Result as RResult;
 
-use chrono::naive::datetime::NaiveDateTime;
 use serde_json::value::Value;
 use serde::Serialize;
 use serde::Serializer;
@@ -18,32 +17,31 @@ use result::Result;
 use status::TaskStatus;
 use project::Project;
 use tag::Tag;
-
-pub static TASKWARRIOR_DATETIME_TEMPLATE : &'static str = "%Y%m%dT%H%M%SZ";
+use date::Date;
 
 #[derive(Debug, Clone)]
 pub struct Task {
     status      : TaskStatus,
     uuid        : Uuid,
-    entry       : NaiveDateTime,
+    entry       : Date,
     description : String,
 
     annotation  : Option<Vec<String>>,
     depends     : Option<String>,
-    due         : Option<NaiveDateTime>,
-    end         : Option<NaiveDateTime>,
+    due         : Option<Date>,
+    end         : Option<Date>,
     imask       : Option<i64>,
     mask        : Option<String>,
-    modified    : Option<NaiveDateTime>,
+    modified    : Option<Date>,
     parent      : Option<Uuid>,
     priority    : Option<TaskPriority>,
     project     : Option<Project>,
     recur       : Option<String>,
-    scheduled   : Option<NaiveDateTime>,
-    start       : Option<NaiveDateTime>,
+    scheduled   : Option<Date>,
+    start       : Option<Date>,
     tags        : Option<Vec<Tag>>,
-    until       : Option<NaiveDateTime>,
-    wait        : Option<NaiveDateTime>,
+    until       : Option<Date>,
+    wait        : Option<Date>,
 }
 
 /*
@@ -55,25 +53,25 @@ impl Task {
     pub fn new(
         status      : TaskStatus,
         uuid        : Uuid,
-        entry       : NaiveDateTime,
+        entry       : Date,
         description : String,
 
         annotation  : Option<Vec<String>>,
         depends     : Option<String>,
-        due         : Option<NaiveDateTime>,
-        end         : Option<NaiveDateTime>,
+        due         : Option<Date>,
+        end         : Option<Date>,
         imask       : Option<i64>,
         mask        : Option<String>,
-        modified    : Option<NaiveDateTime>,
+        modified    : Option<Date>,
         parent      : Option<Uuid>,
         priority    : Option<TaskPriority>,
         project     : Option<Project>,
         recur       : Option<String>,
-        scheduled   : Option<NaiveDateTime>,
-        start       : Option<NaiveDateTime>,
+        scheduled   : Option<Date>,
+        start       : Option<Date>,
         tags        : Option<Vec<Tag>>,
-        until       : Option<NaiveDateTime>,
-        wait        : Option<NaiveDateTime>,
+        until       : Option<Date>,
+        wait        : Option<Date>,
     ) -> Task
     {
         Task {
@@ -109,7 +107,7 @@ impl Task {
         &self.uuid
     }
 
-    pub fn entry(&self) -> &NaiveDateTime {
+    pub fn entry(&self) -> &Date {
         &self.entry
     }
 
@@ -125,11 +123,11 @@ impl Task {
         self.depends.as_ref()
     }
 
-    pub fn due(&self) -> Option<&NaiveDateTime> {
+    pub fn due(&self) -> Option<&Date> {
         self.due.as_ref()
     }
 
-    pub fn end(&self) -> Option<&NaiveDateTime> {
+    pub fn end(&self) -> Option<&Date> {
         self.end.as_ref()
     }
 
@@ -141,7 +139,7 @@ impl Task {
         self.mask.as_ref()
     }
 
-    pub fn modified(&self) -> Option<&NaiveDateTime> {
+    pub fn modified(&self) -> Option<&Date> {
         self.modified.as_ref()
     }
 
@@ -161,11 +159,11 @@ impl Task {
         self.recur.as_ref()
     }
 
-    pub fn scheduled(&self) -> Option<&NaiveDateTime> {
+    pub fn scheduled(&self) -> Option<&Date> {
         self.scheduled.as_ref()
     }
 
-    pub fn start(&self) -> Option<&NaiveDateTime> {
+    pub fn start(&self) -> Option<&Date> {
         self.start.as_ref()
     }
 
@@ -173,11 +171,11 @@ impl Task {
         self.tags.as_ref()
     }
 
-    pub fn until(&self) -> Option<&NaiveDateTime> {
+    pub fn until(&self) -> Option<&Date> {
         self.until.as_ref()
     }
 
-    pub fn wait(&self) -> Option<&NaiveDateTime> {
+    pub fn wait(&self) -> Option<&Date> {
         self.wait.as_ref()
     }
 

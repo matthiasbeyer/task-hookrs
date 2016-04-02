@@ -5,6 +5,7 @@ extern crate serde_json;
 extern crate uuid;
 
 pub mod core;
+pub mod date;
 pub mod error;
 pub mod priority;
 pub mod project;
