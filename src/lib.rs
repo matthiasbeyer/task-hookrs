@@ -7,7 +7,9 @@ extern crate uuid;
 pub mod core;
 pub mod error;
 pub mod priority;
+pub mod project;
 pub mod result;
 pub mod status;
+pub mod tag;
 pub mod task;
 
