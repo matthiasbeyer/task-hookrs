@@ -1,8 +1,8 @@
 use serde::Serialize;
-use serde::Serializer;
-use serde::Deserialize;
-use serde::Deserializer;
-use serde::de::Error;
+use serde::ser::Serializer;
+use serde::de::Deserialize;
+use serde::de::Deserializer;
+use serde::Error;
 use serde::de::Visitor;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -20,9 +20,9 @@ impl Serialize for TaskPriority {
     {
         serializer.serialize_str(
             match self {
-                TaskPriority::Low    => "L",
-                TaskPriority::Medium => "M",
-                TaskPriority::High   => "H",
+                &TaskPriority::Low    => "L",
+                &TaskPriority::Medium => "M",
+                &TaskPriority::High   => "H",
             }
         )
     }
@@ -31,7 +31,7 @@ impl Serialize for TaskPriority {
 
 impl Deserialize for TaskPriority {
 
-    fn deserialize<D>(deserializer: &mut D) -> Result<TaskPriority, Error>
+    fn deserialize<D>(deserializer: &mut D) -> Result<TaskPriority, D::Error>
         where D: Deserializer
     {
         struct TaskPriorityVisitor;
