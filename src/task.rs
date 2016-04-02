@@ -105,15 +105,15 @@ impl Task {
         &self.status
     }
 
-    pub fn uuid(&self) -> Uuid {
+    pub fn uuid(&self) -> &Uuid {
         &self.uuid
     }
 
-    pub fn entry(&self) -> NaiveDateTime {
+    pub fn entry(&self) -> &NaiveDateTime {
         &self.entry
     }
 
-    pub fn description(&self) -> String {
+    pub fn description(&self) -> &String {
         &self.description
     }
 
