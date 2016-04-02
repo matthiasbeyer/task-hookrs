@@ -1,7 +1,14 @@
 use std::collections::BTreeMap;
+use std::result::Result as RResult;
 
 use chrono::naive::datetime::NaiveDateTime;
 use serde_json::value::Value;
+use serde::Serialize;
+use serde::Serializer;
+use serde::Deserialize;
+use serde::Deserializer;
+use serde::de::Error as SerdeError;
+use serde::ser::MapVisitor;
 use uuid::Uuid;
 
 use error::TaskError;
@@ -176,25 +183,114 @@ impl Task {
 
 }
 
-impl Into<Value> for Task {
+impl Serialize for Task {
 
-    fn into(self) -> Value {
-        unimplemented!()
+    fn serialize<S>(&self, serializer: &mut S) -> RResult<(), SerdeError>
+        where S: Serializer
+    {
+        serializer.serialize_struct("Task", TaskVisitor {
+            value: self,
+            state: 0,
+        })
     }
 
 }
 
-pub trait FromJson {
-
-    fn from_json(Value) -> Result<Self>;
-
+struct TaskVisitor<'a> {
+    value: &'a Task,
+    state: u8,
 }
 
-impl FromJson for Task {
+impl<'a> MapVisitor for TaskVisitor<'a> {
 
-    fn from_json(v: Value) -> Result<Self> {
-        unimplemented!()
+    fn visit<S>(&mut self, serializer: &mut S) -> RResult<Option<()>, SerdeError>
+        where S: Serializer
+    {
+        match self.state {
+            0 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("status", &self.value.status))))
+            },
+            1 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("uuid", &self.value.uuid))))
+            },
+            2 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("entry", &self.value.entry))))
+            },
+            3 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("description", &self.value.description))))
+            },
+            4 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("annotation", &self.value.annotation))))
+            },
+            5 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("depends", &self.value.depends))))
+            },
+            6 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("due", &self.value.due))))
+            },
+            7 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("end", &self.value.end))))
+            },
+            8 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("imask", &self.value.imask))))
+            },
+            9 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("mask", &self.value.mask))))
+            },
+            10 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("modified", &self.value.modified))))
+            },
+            11 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("parent", &self.value.parent))))
+            },
+            12 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("priority", &self.value.priority))))
+            },
+            13 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("project", &self.value.project))))
+            },
+            14 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("recur", &self.value.recur))))
+            },
+            15 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("scheduled", &self.value.scheduled))))
+            },
+            16 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("start", &self.value.start))))
+            },
+            17 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("tags", &self.value.tags))))
+            },
+            18 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("until", &self.value.until))))
+            },
+            19 => {
+                self.state += 1;
+                Ok(Some(try!(serializer.serialize_struct_elt("wait", &self.value.wait))))
+            },
+            _ => {
+                Ok(None)
+            }
+        }
     }
 
 }
-
