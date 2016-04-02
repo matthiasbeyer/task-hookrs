@@ -19,16 +19,16 @@ pub enum TaskStatus {
 
 impl Serialize for TaskStatus {
 
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), Error>
+    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
     {
         serializer.serialize_str(
             match self {
-                TaskStatus::Pending   => "pending",
-                TaskStatus::Deleted   => "deleted",
-                TaskStatus::Completed => "completed",
-                TaskStatus::Waiting   => "waiting",
-                TaskStatus::Recurring => "recurring",
+                &TaskStatus::Pending   => "pending",
+                &TaskStatus::Deleted   => "deleted",
+                &TaskStatus::Completed => "completed",
+                &TaskStatus::Waiting   => "waiting",
+                &TaskStatus::Recurring => "recurring",
             }
         )
     }
@@ -36,7 +36,7 @@ impl Serialize for TaskStatus {
 }
 
 impl Deserialize for TaskStatus {
-    fn deserialize<D>(deserializer: &mut D) -> Result<TaskStatus, Error>
+    fn deserialize<D>(deserializer: &mut D) -> Result<TaskStatus, D::Error>
         where D: Deserializer
     {
         struct TaskStatusVisitor;
@@ -52,7 +52,7 @@ impl Deserialize for TaskStatus {
                     "deleted"   => Ok(TaskStatus::Deleted),
                     "completed" => Ok(TaskStatus::Completed),
                     "waiting"   => Ok(TaskStatus::Waiting),
-                    "recurring" => Ok(TaskStatus::Recurrin),
+                    "recurring" => Ok(TaskStatus::Recurring),
                     _           => Err(Error::custom("expected one of pending, deleted, completed, waiting, recurring")),
                 }
             }
