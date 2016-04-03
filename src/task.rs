@@ -423,7 +423,12 @@ impl Visitor for TaskDeserializeVisitor {
                     wait = Some(try!(visitor.visit_value()));
                 },
 
-                field => debug!("field '{}' ignored", field),
+                field => {
+                    debug!("field '{}' ignored", field);
+
+                    use serde::de::impls::IgnoredAny;
+                    let _: IgnoredAny = try!(visitor.visit_value());
+                }
             }
         }
 
