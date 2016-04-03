@@ -26,7 +26,8 @@ impl Serialize for Date {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
     {
-        serializer.serialize_str(&format!("{}", self.0))
+        let formatted = self.0.format(TASKWARRIOR_DATETIME_TEMPLATE);
+        serializer.serialize_str(&format!("{}", formatted))
     }
 
 }
