@@ -493,6 +493,11 @@ mod test {
     use chrono::naive::datetime::NaiveDateTime;
     use serde_json;
 
+    fn mkdate(s: &str) -> Date {
+        let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);
+        Date::from(n.unwrap())
+    }
+
     #[test]
     fn test_deser() {
         let s =
@@ -513,7 +518,7 @@ r#"{
 
         assert!(task.status().clone() == TaskStatus::Waiting);
         assert!(task.description() == "test");
-        assert!(task.entry().clone() == Date::from(NaiveDateTime::parse_from_str("20150619T165438Z", TASKWARRIOR_DATETIME_TEMPLATE).unwrap()));
+        assert!(task.entry().clone() == mkdate("20150619T165438Z"));
         assert!(task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap());
 
         let back = serde_json::to_string(&task).unwrap();
@@ -527,6 +532,70 @@ r#"{
         assert!(back.contains("uuid"));
         assert!(back.contains("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"));
     }
+
+    #[test]
+    fn test_deser_more() {
+        let s =
+r#"{
+"id": 1,
+"description": "some description",
+"entry": "20150619T165438Z",
+"modified": "20160327T164007Z",
+"project": "someproject",
+"status": "waiting",
+"tags": ["some", "tags", "are", "here"],
+"uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0",
+"wait": "20160508T164007Z",
+"urgency": 0.583562
+}"#;
+
+        println!("{}", s);
+
+        let task = serde_json::from_str(s);
+        println!("{:?}", task);
+        assert!(task.is_ok());
+        let task : Task = task.unwrap();
+
+        assert!(task.status().clone() == TaskStatus::Waiting);
+        assert!(task.description() == "some description");
+        assert!(task.entry().clone() == mkdate("20150619T165438Z"));
+        assert!(task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap());
+
+        assert!(task.modified() == Some(&mkdate("20160327T164007Z")));
+        assert!(task.project() == Some(&String::from("someproject")));
+
+        if let Some(tags) = task.tags() {
+            for tag in tags {
+                let any_tag = [ "some", "tags", "are", "here", ]
+                    .into_iter().any(|t| tag == *t);
+                assert!(any_tag, "Tag {} missing", tag);
+            }
+        } else {
+                assert!(false, "Tags completely missing");
+        }
+
+        assert!(task.wait() == Some(&mkdate("20160508T164007Z")));
+        // assert!(task.urgency().clone() == 0.583562);
+
+        let back = serde_json::to_string(&task).unwrap();
+
+        assert!(back.contains("description"));
+        assert!(back.contains("some description"));
+        assert!(back.contains("entry"));
+        assert!(back.contains("20150619T165438Z"));
+        assert!(back.contains("project"));
+        assert!(back.contains("someproject"));
+        assert!(back.contains("status"));
+        assert!(back.contains("waiting"));
+        assert!(back.contains("tags"));
+        assert!(back.contains("some"));
+        assert!(back.contains("tags"));
+        assert!(back.contains("are"));
+        assert!(back.contains("here"));
+        assert!(back.contains("uuid"));
+        assert!(back.contains("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"));
+    }
+
 
 }
 
