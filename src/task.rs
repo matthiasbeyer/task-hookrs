@@ -424,9 +424,9 @@ impl Visitor for TaskDeserializeVisitor {
                 },
 
                 field => {
-                    debug!("field '{}' ignored", field);
-
                     use serde::de::impls::IgnoredAny;
+
+                    debug!("field '{}' ignored", field);
                     let _: IgnoredAny = try!(visitor.visit_value());
                 }
             }
