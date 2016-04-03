@@ -8,8 +8,16 @@ use serde::de::Visitor;
 use serde::de::Error as SerdeError;
 use chrono::naive::datetime::NaiveDateTime;
 
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub struct Date(NaiveDateTime);
+
+impl From<NaiveDateTime> for Date {
+
+    fn from(ndt: NaiveDateTime) -> Date {
+        Date(ndt)
+    }
+
+}
 
 pub static TASKWARRIOR_DATETIME_TEMPLATE : &'static str = "%Y%m%dT%H%M%SZ";
 
