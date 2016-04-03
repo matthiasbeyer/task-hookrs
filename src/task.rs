@@ -482,3 +482,54 @@ impl Visitor for TaskDeserializeVisitor {
     }
 }
 
+#[cfg(test)]
+mod test {
+    use date::Date;
+    use date::TASKWARRIOR_DATETIME_TEMPLATE;
+    use priority::TaskPriority;
+    use project::Project;
+    use status::TaskStatus;
+    use tag::Tag;
+    use task::Task;
+
+    use uuid::Uuid;
+    use chrono::naive::datetime::NaiveDateTime;
+    use serde_json;
+
+    #[test]
+    fn test_deser() {
+        let s =
+r#"{
+"id": 1,
+"description": "test",
+"entry": "20150619T165438Z",
+"status": "waiting",
+"uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"
+}"#;
+
+        println!("{}", s);
+
+        let task = serde_json::from_str(s);
+        println!("{:?}", task);
+        assert!(task.is_ok());
+        let task : Task = task.unwrap();
+
+        assert!(task.status().clone() == TaskStatus::Waiting);
+        assert!(task.description() == "test");
+        assert!(task.entry().clone() == Date::from(NaiveDateTime::parse_from_str("20150619T165438Z", TASKWARRIOR_DATETIME_TEMPLATE).unwrap()));
+        assert!(task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap());
+
+        let back = serde_json::to_string(&task).unwrap();
+
+        assert!(back.contains("description"));
+        assert!(back.contains("test"));
+        assert!(back.contains("entry"));
+        assert!(back.contains("20150619T165438Z"));
+        assert!(back.contains("status"));
+        assert!(back.contains("waiting"));
+        assert!(back.contains("uuid"));
+        assert!(back.contains("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"));
+    }
+
+}
+
