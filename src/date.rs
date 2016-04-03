@@ -8,8 +8,16 @@ use serde::de::Visitor;
 use serde::de::Error as SerdeError;
 use chrono::naive::datetime::NaiveDateTime;
 
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub struct Date(NaiveDateTime);
+
+impl From<NaiveDateTime> for Date {
+
+    fn from(ndt: NaiveDateTime) -> Date {
+        Date(ndt)
+    }
+
+}
 
 pub static TASKWARRIOR_DATETIME_TEMPLATE : &'static str = "%Y%m%dT%H%M%SZ";
 
@@ -18,7 +26,8 @@ impl Serialize for Date {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
     {
-        serializer.serialize_str(&format!("{}", self.0))
+        let formatted = self.0.format(TASKWARRIOR_DATETIME_TEMPLATE);
+        serializer.serialize_str(&format!("{}", formatted))
     }
 
 }

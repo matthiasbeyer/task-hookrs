@@ -5,9 +5,6 @@ use serde::Deserializer;
 use serde::de::Error;
 use serde::de::Visitor;
 
-use std::convert::Into;
-use std::convert::From;
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TaskStatus {
     Pending,

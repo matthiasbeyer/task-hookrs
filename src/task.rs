@@ -1,19 +1,16 @@
-use std::collections::BTreeMap;
 use std::result::Result as RResult;
 
-use serde_json::value::Value;
 use serde::Serialize;
 use serde::Serializer;
 use serde::Deserialize;
 use serde::Deserializer;
+use serde::de::Visitor;
 use serde::de::Error as SerdeError;
 use serde::ser::MapVisitor;
+use serde::de::MapVisitor as DeserializeMapVisitor;
 use uuid::Uuid;
 
-use error::TaskError;
-use error::TaskErrorKind;
 use priority::TaskPriority;
-use result::Result;
 use status::TaskStatus;
 use project::Project;
 use tag::Tag;
@@ -292,3 +289,313 @@ impl<'a> MapVisitor for TaskVisitor<'a> {
     }
 
 }
+
+impl Deserialize for Task {
+
+    fn deserialize<D>(deserializer: &mut D) -> RResult<Task, D::Error>
+        where D: Deserializer
+    {
+        static FIELDS: &'static [&'static str] = &[
+            "status",
+            "uuid",
+            "entry",
+            "description",
+
+            "annotation",
+            "depends",
+            "due",
+            "end",
+            "imask",
+            "mask",
+            "modified",
+            "parent",
+            "priority",
+            "project",
+            "recur",
+            "scheduled",
+            "start",
+            "tags",
+            "until",
+            "wait"
+        ];
+        deserializer.deserialize_struct("Task", FIELDS, TaskDeserializeVisitor)
+    }
+
+}
+
+struct TaskDeserializeVisitor;
+
+impl Visitor for TaskDeserializeVisitor {
+    type Value = Task;
+
+    fn visit_map<V>(&mut self, mut visitor: V) -> RResult<Task, V::Error>
+        where V: DeserializeMapVisitor
+    {
+        let mut status      = None;
+        let mut uuid        = None;
+        let mut entry       = None;
+        let mut description = None;
+
+        let mut annotation  = None;
+        let mut depends     = None;
+        let mut due         = None;
+        let mut end         = None;
+        let mut imask       = None;
+        let mut mask        = None;
+        let mut modified    = None;
+        let mut parent      = None;
+        let mut priority    = None;
+        let mut project     = None;
+        let mut recur       = None;
+        let mut scheduled   = None;
+        let mut start       = None;
+        let mut tags        = None;
+        let mut until       = None;
+        let mut wait        = None;
+
+        loop {
+            let key : Option<String> = try!(visitor.visit_key());
+            if key.is_none() {
+                break;
+            }
+            let key = key.unwrap();
+
+            match &key[..] {
+                "status" => {
+                    status = Some(try!(visitor.visit_value()));
+                },
+                "uuid" => {
+                    uuid = Some(try!(visitor.visit_value()));
+                },
+                "entry" => {
+                    entry = Some(try!(visitor.visit_value()));
+                },
+                "description" => {
+                    description = Some(try!(visitor.visit_value()));
+                },
+
+                "annotation" => {
+                    annotation = Some(try!(visitor.visit_value()));
+                },
+                "depends" => {
+                    depends = Some(try!(visitor.visit_value()));
+                },
+                "due" => {
+                    due = Some(try!(visitor.visit_value()));
+                },
+                "end" => {
+                    end = Some(try!(visitor.visit_value()));
+                },
+                "imask" => {
+                    imask = Some(try!(visitor.visit_value()));
+                },
+                "mask" => {
+                    mask = Some(try!(visitor.visit_value()));
+                },
+                "modified" => {
+                    modified = Some(try!(visitor.visit_value()));
+                },
+                "parent" => {
+                    parent = Some(try!(visitor.visit_value()));
+                },
+                "priority" => {
+                    priority = Some(try!(visitor.visit_value()));
+                },
+                "project" => {
+                    project = Some(try!(visitor.visit_value()));
+                },
+                "recur" => {
+                    recur = Some(try!(visitor.visit_value()));
+                },
+                "scheduled" => {
+                    scheduled = Some(try!(visitor.visit_value()));
+                },
+                "start" => {
+                    start = Some(try!(visitor.visit_value()));
+                },
+                "tags" => {
+                    tags = Some(try!(visitor.visit_value()));
+                },
+                "until" => {
+                    until = Some(try!(visitor.visit_value()));
+                },
+                "wait" => {
+                    wait = Some(try!(visitor.visit_value()));
+                },
+
+                field => {
+                    use serde::de::impls::IgnoredAny;
+
+                    debug!("field '{}' ignored", field);
+                    let _: IgnoredAny = try!(visitor.visit_value());
+                }
+            }
+        }
+
+        let status = match status {
+            Some(status) => status,
+            None => try!(visitor.missing_field("status")),
+        };
+
+        let uuid = match uuid {
+            Some(uuid) => uuid,
+            None => try!(visitor.missing_field("uuid")),
+        };
+
+        let entry = match entry {
+            Some(entry) => entry,
+            None => try!(visitor.missing_field("entry")),
+        };
+
+        let description = match description {
+            Some(description) => description,
+            None => try!(visitor.missing_field("description")),
+        };
+
+        try!(visitor.end());
+
+        let task = Task::new(
+            status,
+            uuid,
+            entry,
+            description,
+
+            annotation,
+            depends,
+            due,
+            end,
+            imask,
+            mask,
+            modified,
+            parent,
+            priority,
+            project,
+            recur,
+            scheduled,
+            start,
+            tags,
+            until,
+            wait
+        );
+
+        Ok(task)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use date::Date;
+    use date::TASKWARRIOR_DATETIME_TEMPLATE;
+    use status::TaskStatus;
+    use task::Task;
+
+    use uuid::Uuid;
+    use chrono::naive::datetime::NaiveDateTime;
+    use serde_json;
+
+    fn mkdate(s: &str) -> Date {
+        let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);
+        Date::from(n.unwrap())
+    }
+
+    #[test]
+    fn test_deser() {
+        let s =
+r#"{
+"id": 1,
+"description": "test",
+"entry": "20150619T165438Z",
+"status": "waiting",
+"uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"
+}"#;
+
+        println!("{}", s);
+
+        let task = serde_json::from_str(s);
+        println!("{:?}", task);
+        assert!(task.is_ok());
+        let task : Task = task.unwrap();
+
+        assert!(task.status().clone() == TaskStatus::Waiting);
+        assert!(task.description() == "test");
+        assert!(task.entry().clone() == mkdate("20150619T165438Z"));
+        assert!(task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap());
+
+        let back = serde_json::to_string(&task).unwrap();
+
+        assert!(back.contains("description"));
+        assert!(back.contains("test"));
+        assert!(back.contains("entry"));
+        assert!(back.contains("20150619T165438Z"));
+        assert!(back.contains("status"));
+        assert!(back.contains("waiting"));
+        assert!(back.contains("uuid"));
+        assert!(back.contains("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"));
+    }
+
+    #[test]
+    fn test_deser_more() {
+        let s =
+r#"{
+"id": 1,
+"description": "some description",
+"entry": "20150619T165438Z",
+"modified": "20160327T164007Z",
+"project": "someproject",
+"status": "waiting",
+"tags": ["some", "tags", "are", "here"],
+"uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0",
+"wait": "20160508T164007Z",
+"urgency": 0.583562
+}"#;
+
+        println!("{}", s);
+
+        let task = serde_json::from_str(s);
+        println!("{:?}", task);
+        assert!(task.is_ok());
+        let task : Task = task.unwrap();
+
+        assert!(task.status().clone() == TaskStatus::Waiting);
+        assert!(task.description() == "some description");
+        assert!(task.entry().clone() == mkdate("20150619T165438Z"));
+        assert!(task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap());
+
+        assert!(task.modified() == Some(&mkdate("20160327T164007Z")));
+        assert!(task.project() == Some(&String::from("someproject")));
+
+        if let Some(tags) = task.tags() {
+            for tag in tags {
+                let any_tag = [ "some", "tags", "are", "here", ]
+                    .into_iter().any(|t| tag == *t);
+                assert!(any_tag, "Tag {} missing", tag);
+            }
+        } else {
+                assert!(false, "Tags completely missing");
+        }
+
+        assert!(task.wait() == Some(&mkdate("20160508T164007Z")));
+        // assert!(task.urgency().clone() == 0.583562);
+
+        let back = serde_json::to_string(&task).unwrap();
+
+        assert!(back.contains("description"));
+        assert!(back.contains("some description"));
+        assert!(back.contains("entry"));
+        assert!(back.contains("20150619T165438Z"));
+        assert!(back.contains("project"));
+        assert!(back.contains("someproject"));
+        assert!(back.contains("status"));
+        assert!(back.contains("waiting"));
+        assert!(back.contains("tags"));
+        assert!(back.contains("some"));
+        assert!(back.contains("tags"));
+        assert!(back.contains("are"));
+        assert!(back.contains("here"));
+        assert!(back.contains("uuid"));
+        assert!(back.contains("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"));
+    }
+
+
+}
+
