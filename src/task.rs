@@ -1,7 +1,5 @@
-use std::collections::BTreeMap;
 use std::result::Result as RResult;
 
-use serde_json::value::Value;
 use serde::Serialize;
 use serde::Serializer;
 use serde::Deserialize;
@@ -12,10 +10,7 @@ use serde::ser::MapVisitor;
 use serde::de::MapVisitor as DeserializeMapVisitor;
 use uuid::Uuid;
 
-use error::TaskError;
-use error::TaskErrorKind;
 use priority::TaskPriority;
-use result::Result;
 use status::TaskStatus;
 use project::Project;
 use tag::Tag;
@@ -486,10 +481,7 @@ impl Visitor for TaskDeserializeVisitor {
 mod test {
     use date::Date;
     use date::TASKWARRIOR_DATETIME_TEMPLATE;
-    use priority::TaskPriority;
-    use project::Project;
     use status::TaskStatus;
-    use tag::Tag;
     use task::Task;
 
     use uuid::Uuid;
