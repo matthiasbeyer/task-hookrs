@@ -15,6 +15,7 @@ use status::TaskStatus;
 use project::Project;
 use tag::Tag;
 use date::Date;
+use annotation::Annotation;
 
 #[derive(Debug, Clone)]
 pub struct Task {
@@ -23,7 +24,7 @@ pub struct Task {
     entry       : Date,
     description : String,
 
-    annotation  : Option<Vec<String>>,
+    annotations : Option<Vec<Annotation>>,
     depends     : Option<String>,
     due         : Option<Date>,
     end         : Option<Date>,
@@ -53,7 +54,7 @@ impl Task {
         entry       : Date,
         description : String,
 
-        annotation  : Option<Vec<String>>,
+        annotations : Option<Vec<Annotation>>,
         depends     : Option<String>,
         due         : Option<Date>,
         end         : Option<Date>,
@@ -77,7 +78,7 @@ impl Task {
             entry       : entry,
             description : description,
 
-            annotation  : annotation,
+            annotations : annotations,
             depends     : depends,
             due         : due,
             end         : end,
@@ -112,8 +113,8 @@ impl Task {
         &self.description
     }
 
-    pub fn annotation(&self) -> Option<&Vec<String>> {
-        self.annotation.as_ref()
+    pub fn annotations(&self) -> Option<&Vec<Annotation>> {
+        self.annotations.as_ref()
     }
 
     pub fn depends(&self) -> Option<&String> {
@@ -220,7 +221,7 @@ impl<'a> MapVisitor for TaskVisitor<'a> {
             },
             4 => {
                 self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("annotation", &self.value.annotation))))
+                Ok(Some(try!(serializer.serialize_struct_elt("annotations", &self.value.annotations))))
             },
             5 => {
                 self.state += 1;
@@ -301,7 +302,7 @@ impl Deserialize for Task {
             "entry",
             "description",
 
-            "annotation",
+            "annotations",
             "depends",
             "due",
             "end",
@@ -336,7 +337,7 @@ impl Visitor for TaskDeserializeVisitor {
         let mut entry       = None;
         let mut description = None;
 
-        let mut annotation  = None;
+        let mut annotations = None;
         let mut depends     = None;
         let mut due         = None;
         let mut end         = None;
@@ -374,8 +375,8 @@ impl Visitor for TaskDeserializeVisitor {
                     description = Some(try!(visitor.visit_value()));
                 },
 
-                "annotation" => {
-                    annotation = Some(try!(visitor.visit_value()));
+                "annotations" => {
+                    annotations = Some(try!(visitor.visit_value()));
                 },
                 "depends" => {
                     depends = Some(try!(visitor.visit_value()));
@@ -460,7 +461,7 @@ impl Visitor for TaskDeserializeVisitor {
             entry,
             description,
 
-            annotation,
+            annotations,
             depends,
             due,
             end,
@@ -488,6 +489,7 @@ mod test {
     use date::TASKWARRIOR_DATETIME_TEMPLATE;
     use status::TaskStatus;
     use task::Task;
+    use annotation::Annotation;
 
     use uuid::Uuid;
     use chrono::naive::datetime::NaiveDateTime;
@@ -596,6 +598,52 @@ r#"{
         assert!(back.contains("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"));
     }
 
+    #[test]
+    fn test_deser_annotation() {
+        let s =
+r#"{
+"id":192,
+"description":"Some long description for a task",
+"entry":"20160423T125820Z",
+"modified":"20160423T125942Z",
+"project":"project",
+"status":"pending",
+"tags":["search","things"],
+"uuid":"5a04bb1e-3f4b-49fb-b9ba-44407ca223b5",
+"annotations":[{"entry":"20160423T125911Z","description":"An Annotation"},
+               {"entry":"20160423T125926Z","description":"Another Annotation"},
+               {"entry":"20160422T125942Z","description":"A Third Anno"}
+               ],
+"urgency":10.911
+}"#;
+
+        println!("{}", s);
+
+        let task = serde_json::from_str(s);
+        println!("{:?}", task);
+        assert!(task.is_ok());
+        let task : Task = task.unwrap();
+
+        let all_annotations = vec![
+            Annotation::new(mkdate("20160423T125911Z"), String::from("An Annotation")),
+            Annotation::new(mkdate("20160423T125926Z"), String::from("Another Annotation")),
+            Annotation::new(mkdate("20160422T125942Z"), String::from("A Third Anno"))
+        ];
+
+        if let Some(annotations) = task.annotations() {
+            for annotation in annotations {
+                let r = all_annotations.iter().any(|ann| {
+                    let descr = ann.description() == annotation.description();
+                    let entry = ann.entry() == annotation.entry();
+
+                    descr && entry
+                });
+                assert!(r, "Annotation {:?} missing or buggy", annotation);
+            }
+        } else {
+            assert!(false, "Annotations missing");
+        }
+    }
 
 }
 
