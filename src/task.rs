@@ -489,6 +489,7 @@ mod test {
     use date::TASKWARRIOR_DATETIME_TEMPLATE;
     use status::TaskStatus;
     use task::Task;
+    use annotation::Annotation;
 
     use uuid::Uuid;
     use chrono::naive::datetime::NaiveDateTime;
@@ -597,6 +598,52 @@ r#"{
         assert!(back.contains("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"));
     }
 
+    #[test]
+    fn test_deser_annotation() {
+        let s =
+r#"{
+"id":192,
+"description":"Some long description for a task",
+"entry":"20160423T125820Z",
+"modified":"20160423T125942Z",
+"project":"project",
+"status":"pending",
+"tags":["search","things"],
+"uuid":"5a04bb1e-3f4b-49fb-b9ba-44407ca223b5",
+"annotations":[{"entry":"20160423T125911Z","description":"An Annotation"},
+               {"entry":"20160423T125926Z","description":"Another Annotation"},
+               {"entry":"20160422T125942Z","description":"A Third Anno"}
+               ],
+"urgency":10.911
+}"#;
+
+        println!("{}", s);
+
+        let task = serde_json::from_str(s);
+        println!("{:?}", task);
+        assert!(task.is_ok());
+        let task : Task = task.unwrap();
+
+        let all_annotations = vec![
+            Annotation::new(mkdate("20160423T125911Z"), String::from("An Annotation")),
+            Annotation::new(mkdate("20160423T125926Z"), String::from("Another Annotation")),
+            Annotation::new(mkdate("20160422T125942Z"), String::from("A Third Anno"))
+        ];
+
+        if let Some(annotations) = task.annotations() {
+            for annotation in annotations {
+                let r = all_annotations.iter().any(|ann| {
+                    let descr = ann.description() == annotation.description();
+                    let entry = ann.entry() == annotation.entry();
+
+                    descr && entry
+                });
+                assert!(r, "Annotation {:?} missing or buggy", annotation);
+            }
+        } else {
+            assert!(false, "Annotations missing");
+        }
+    }
 
 }
 
