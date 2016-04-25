@@ -15,6 +15,7 @@ use status::TaskStatus;
 use project::Project;
 use tag::Tag;
 use date::Date;
+use annotation::Annotation;
 
 #[derive(Debug, Clone)]
 pub struct Task {
@@ -23,7 +24,7 @@ pub struct Task {
     entry       : Date,
     description : String,
 
-    annotation  : Option<Vec<String>>,
+    annotations : Option<Vec<Annotation>>,
     depends     : Option<String>,
     due         : Option<Date>,
     end         : Option<Date>,
@@ -53,7 +54,7 @@ impl Task {
         entry       : Date,
         description : String,
 
-        annotation  : Option<Vec<String>>,
+        annotations : Option<Vec<Annotation>>,
         depends     : Option<String>,
         due         : Option<Date>,
         end         : Option<Date>,
@@ -77,7 +78,7 @@ impl Task {
             entry       : entry,
             description : description,
 
-            annotation  : annotation,
+            annotations : annotations,
             depends     : depends,
             due         : due,
             end         : end,
@@ -112,8 +113,8 @@ impl Task {
         &self.description
     }
 
-    pub fn annotation(&self) -> Option<&Vec<String>> {
-        self.annotation.as_ref()
+    pub fn annotations(&self) -> Option<&Vec<Annotation>> {
+        self.annotations.as_ref()
     }
 
     pub fn depends(&self) -> Option<&String> {
@@ -220,7 +221,7 @@ impl<'a> MapVisitor for TaskVisitor<'a> {
             },
             4 => {
                 self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("annotation", &self.value.annotation))))
+                Ok(Some(try!(serializer.serialize_struct_elt("annotations", &self.value.annotations))))
             },
             5 => {
                 self.state += 1;
@@ -301,7 +302,7 @@ impl Deserialize for Task {
             "entry",
             "description",
 
-            "annotation",
+            "annotations",
             "depends",
             "due",
             "end",
@@ -336,7 +337,7 @@ impl Visitor for TaskDeserializeVisitor {
         let mut entry       = None;
         let mut description = None;
 
-        let mut annotation  = None;
+        let mut annotations = None;
         let mut depends     = None;
         let mut due         = None;
         let mut end         = None;
@@ -374,8 +375,8 @@ impl Visitor for TaskDeserializeVisitor {
                     description = Some(try!(visitor.visit_value()));
                 },
 
-                "annotation" => {
-                    annotation = Some(try!(visitor.visit_value()));
+                "annotations" => {
+                    annotations = Some(try!(visitor.visit_value()));
                 },
                 "depends" => {
                     depends = Some(try!(visitor.visit_value()));
@@ -460,7 +461,7 @@ impl Visitor for TaskDeserializeVisitor {
             entry,
             description,
 
-            annotation,
+            annotations,
             depends,
             due,
             end,
