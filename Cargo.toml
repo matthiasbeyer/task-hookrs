@@ -3,6 +3,12 @@ name = "task-hookrs"
 version = "0.1.0"
 authors = ["Matthias Beyer <mail@beyermatthias.de>"]
 
+documentation = "https://matthiasbeyer.github.io/task-hookrs/task-hookrs/index.html"
+homepage      = "https://github.com/matthiasbeyer/task-hookrs"
+repository    = "https://github.com/matthiasbeyer/task-hookrs"
+readme        = "./README.md"
+license       = "./LICENSE"
+
 [dependencies]
 chrono = "0.2.20"
 log = "0.3.5"
