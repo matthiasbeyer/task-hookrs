@@ -1,3 +1,5 @@
+#![doc(html_root_url = "https://matthiasbeyer.github.io/task-hookrs/")]
+
 extern crate chrono;
 #[macro_use] extern crate log;
 extern crate serde;
