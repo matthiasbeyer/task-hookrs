@@ -3,6 +3,10 @@
 `task-hookrs` is a rust library for writing
 [taskwarrior](https://taskwarrior.org) hooks.
 
+* [Documentation](https://matthiasbeyer.github.io/task-hookrs/task-hookrs/index.html)
+* [![Build Status](https://travis-ci.org/matthiasbeyer/task-hookrs.svg?branch=master)](https://travis-ci.org/matthiasbeyer/task-hookrs)
+* [travis-ci](https://travis-ci.org/matthiasbeyer/task-hookrs)
+
 # License
 
     task-hookrs - A Rust library for writing taskwarrior hooks and general interfacing with taskwarrior
