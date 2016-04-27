@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Matthias Beyer <mail@beyermatthias.de>"]
 
 description = "Crate to work with taskwarrior exported JSON"
-keywords = [ "JSON", "json", "taskwarrior", "todo", "task", "binding", "import", "export"]
+keywords = ["json", "taskwarrior", "todo", "import", "export"]
 
 documentation = "https://matthiasbeyer.github.io/task-hookrs/task-hookrs/index.html"
 homepage      = "https://github.com/matthiasbeyer/task-hookrs"
