@@ -5,6 +5,7 @@ use serde::Deserializer;
 use serde::de::Error;
 use serde::de::Visitor;
 
+/// Enum for status taskwarrior supports.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TaskStatus {
     Pending,
