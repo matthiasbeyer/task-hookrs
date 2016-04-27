@@ -9,7 +9,7 @@ documentation = "https://matthiasbeyer.github.io/task-hookrs/task-hookrs/index.h
 homepage      = "https://github.com/matthiasbeyer/task-hookrs"
 repository    = "https://github.com/matthiasbeyer/task-hookrs"
 readme        = "./README.md"
-license       = "./LICENSE"
+license       = "LGPL-2.1"
 
 [dependencies]
 chrono = "0.2.20"
