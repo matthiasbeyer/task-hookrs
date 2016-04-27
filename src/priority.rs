@@ -5,6 +5,7 @@ use serde::de::Deserializer;
 use serde::Error;
 use serde::de::Visitor;
 
+/// Enum for the priorities taskwarrior supports.
 #[derive(Debug, Clone, PartialEq)]
 pub enum TaskPriority {
     Low,
