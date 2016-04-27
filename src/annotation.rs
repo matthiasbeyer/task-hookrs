@@ -11,6 +11,9 @@ use serde::de::MapVisitor as DeserializeMapVisitor;
 
 use date::Date;
 
+/// Annotation type for task annotations.
+/// Each annotation in taskwarrior consists of a date and a description,
+/// the date is named "entry", the description "description" in the JSON export.
 #[derive(Clone, Debug)]
 pub struct Annotation {
     entry: Date,
@@ -19,6 +22,7 @@ pub struct Annotation {
 
 impl Annotation {
 
+    /// Create a new Annotation object
     pub fn new(entry: Date, description: String) -> Annotation {
         Annotation {
             entry: entry,
@@ -26,10 +30,12 @@ impl Annotation {
         }
     }
 
+    /// Get the entry date
     pub fn entry(&self) -> &Date {
         &self.entry
     }
 
+    /// Get the description text
     pub fn description(&self) -> &String {
         &self.description
     }
@@ -49,6 +55,7 @@ impl Serialize for Annotation {
 
 }
 
+/// Helper type for the `Serialize` implementation
 struct AnnotationVisitor<'a> {
     value: &'a Annotation,
     state: u8,
@@ -91,6 +98,7 @@ impl Deserialize for Annotation {
 
 }
 
+/// Helper type for the `Deserialize` implementation
 struct AnnotationDeserializeVisitor;
 
 impl Visitor for AnnotationDeserializeVisitor {
