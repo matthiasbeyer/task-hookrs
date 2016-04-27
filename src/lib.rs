@@ -21,7 +21,6 @@ extern crate serde_json;
 extern crate uuid;
 
 pub mod annotation;
-pub mod core;
 pub mod date;
 pub mod error;
 pub mod import;
