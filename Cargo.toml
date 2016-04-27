@@ -3,6 +3,8 @@ name = "task-hookrs"
 version = "0.1.0"
 authors = ["Matthias Beyer <mail@beyermatthias.de>"]
 
+description = "Crate to work with taskwarrior exported JSON"
+
 documentation = "https://matthiasbeyer.github.io/task-hookrs/task-hookrs/index.html"
 homepage      = "https://github.com/matthiasbeyer/task-hookrs"
 repository    = "https://github.com/matthiasbeyer/task-hookrs"
