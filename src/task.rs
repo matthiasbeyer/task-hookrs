@@ -128,6 +128,12 @@ impl Task {
         }
     }
 
+    pub fn add_annotations<I: Iterator<Item = Annotation>>(&mut self, i: I) {
+        for item in i {
+            self.add_annotation(item)
+        }
+    }
+
     pub fn depends(&self) -> Option<&String> {
         self.depends.as_ref()
     }
