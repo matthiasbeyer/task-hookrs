@@ -3,9 +3,14 @@
 `task-hookrs` is a rust library for writing
 [taskwarrior](https://taskwarrior.org) hooks.
 
+* [crate](https://crates.io/crates/task-hookrs/)
 * [Documentation](https://matthiasbeyer.github.io/task-hookrs/task-hookrs/index.html)
 * [![Build Status](https://travis-ci.org/matthiasbeyer/task-hookrs.svg?branch=master)](https://travis-ci.org/matthiasbeyer/task-hookrs)
 * [travis-ci](https://travis-ci.org/matthiasbeyer/task-hookrs)
+
+`task-hookrs` is able to import and export the JSON taskwarrior understands, so
+you can write taskwarrior hooks without having to deal with the JSON
+import/export foo by simply using this crate.
 
 # License
 
