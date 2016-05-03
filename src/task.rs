@@ -117,6 +117,23 @@ impl Task {
         self.annotations.as_ref()
     }
 
+    pub fn add_annotation(&mut self, an: Annotation) {
+        if self.annotations.is_none() {
+            self.annotations = Some(vec![an]);
+        } else {
+            match self.annotations.as_mut() {
+                Some(ref mut anno) => anno.push(an),
+                _ => unreachable!(),
+            }
+        }
+    }
+
+    pub fn add_annotations<I: Iterator<Item = Annotation>>(&mut self, i: I) {
+        for item in i {
+            self.add_annotation(item)
+        }
+    }
+
     pub fn depends(&self) -> Option<&String> {
         self.depends.as_ref()
     }
