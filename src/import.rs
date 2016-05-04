@@ -1,3 +1,5 @@
+//! Module containing the `import()` function
+
 use std::io::Read;
 
 use serde_json;
@@ -6,6 +8,8 @@ use result::Result;
 use task::Task;
 use error::{TaskError, TaskErrorKind};
 
+/// Import taskwarrior-exported JSON. This expects an JSON Array of objects, as exported by
+/// taskwarrior.
 pub fn import<R: Read>(r: R) -> Result<Vec<Task>> {
     serde_json::from_reader(r)
         .map_err(|e| {

@@ -1,3 +1,5 @@
+//! Module containing TaskPriority types and trait impls
+
 use serde::Serialize;
 use serde::ser::Serializer;
 use serde::de::Deserialize;
@@ -5,10 +7,16 @@ use serde::de::Deserializer;
 use serde::Error;
 use serde::de::Visitor;
 
+/// Enum for the priorities taskwarrior supports.
 #[derive(Debug, Clone, PartialEq)]
 pub enum TaskPriority {
+    /// Low prio for a Task
     Low,
+
+    /// Medium prio for a Task
     Medium,
+
+    /// High prio for a Task
     High,
 }
 

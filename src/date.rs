@@ -1,4 +1,7 @@
+//! Module for wrapping chrono::naive::datetime::NaiveDateTime
+
 use std::error::Error;
+use std::ops::{Deref, DerefMut};
 
 use serde::Serialize;
 use serde::Serializer;
@@ -8,8 +11,26 @@ use serde::de::Visitor;
 use serde::de::Error as SerdeError;
 use chrono::naive::datetime::NaiveDateTime;
 
+/// Date is a NaiveDateTime-Wrapper object to be able to implement foreign traits on it
 #[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub struct Date(NaiveDateTime);
+
+impl Deref for Date {
+    type Target = NaiveDateTime;
+
+    fn deref(&self) -> &NaiveDateTime {
+        &self.0
+    }
+
+}
+
+impl DerefMut for Date {
+
+    fn deref_mut(&mut self) -> &mut NaiveDateTime {
+        &mut self.0
+    }
+
+}
 
 impl From<NaiveDateTime> for Date {
 
@@ -19,6 +40,7 @@ impl From<NaiveDateTime> for Date {
 
 }
 
+/// The date-time parsing template used to parse the date time data exported by taskwarrior.
 pub static TASKWARRIOR_DATETIME_TEMPLATE : &'static str = "%Y%m%dT%H%M%SZ";
 
 impl Serialize for Date {

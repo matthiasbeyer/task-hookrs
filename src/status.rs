@@ -1,3 +1,8 @@
+//! Module containing `TaskStatus` type and trait impls
+
+use std::fmt::{Display, Formatter};
+use std::fmt::Error as FmtError;
+
 use serde::Serialize;
 use serde::Serializer;
 use serde::Deserialize;
@@ -5,13 +10,36 @@ use serde::Deserializer;
 use serde::de::Error;
 use serde::de::Visitor;
 
+/// Enum for status taskwarrior supports.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TaskStatus {
+    /// Pening status type
     Pending,
+
+    /// Deleted status type
     Deleted,
+
+    /// Completed status type
     Completed,
+
+    /// Waiting status type
     Waiting,
+
+    /// Recurring status type
     Recurring
+}
+
+impl Display for TaskStatus {
+
+    fn fmt(&self, fmt: &mut Formatter) -> Result<(), FmtError> {
+        match self {
+            &TaskStatus::Pending   => write!(fmt, "Pending"),
+            &TaskStatus::Deleted   => write!(fmt, "Deleted"),
+            &TaskStatus::Completed => write!(fmt, "Completed"),
+            &TaskStatus::Waiting   => write!(fmt, "Waiting"),
+            &TaskStatus::Recurring => write!(fmt, "Recurring"),
+        }
+    }
 }
 
 impl Serialize for TaskStatus {

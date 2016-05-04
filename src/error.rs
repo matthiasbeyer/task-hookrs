@@ -1,14 +1,19 @@
+//! Error module, containing error types
+
 use std::error::Error;
 use std::fmt::Error as FmtError;
 use std::clone::Clone;
 use std::fmt::{Display, Formatter};
 
-/**
- * Kind of store error
- */
+///
+/// Kind of task error
+///
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum TaskErrorKind {
+    /// Error kind indicating that the JSON parser failed
     ParserError,
+
+    /// Error kind indicating that the Status of a task is missing
     NoStatus,
 }
 
@@ -28,9 +33,9 @@ impl Display for TaskErrorKind {
 
 }
 
-/**
- * Store error type
- */
+///
+/// Task error type
+///
 #[derive(Debug)]
 pub struct TaskError {
     err_type: TaskErrorKind,
@@ -39,9 +44,9 @@ pub struct TaskError {
 
 impl TaskError {
 
-    /**
-     * Build a new TaskError from an TaskErrorKind, optionally with cause
-     */
+    ///
+    /// Build a new TaskError from an TaskErrorKind, optionally with cause
+    ///
     pub fn new(errtype: TaskErrorKind, cause: Option<Box<Error>>)
         -> TaskError
         {
@@ -51,9 +56,9 @@ impl TaskError {
             }
         }
 
-    /**
-     * Get the error type of this TaskError
-     */
+    ///
+    /// Get the error type of this TaskError
+    ///
     pub fn err_type(&self) -> TaskErrorKind {
         self.err_type.clone()
     }

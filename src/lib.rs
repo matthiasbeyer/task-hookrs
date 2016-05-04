@@ -1,3 +1,26 @@
+//! This crate exports functionality to import and export taskwarrior-compatible JSON by
+//! translating the JSON into rust types and vice-versa.
+//!
+//! For example:
+//!
+//! ```
+//!   use std::io::stdin;
+//!
+//!   use task_hookrs::task::Task;
+//!   use task_hookrs::import::import;
+//!
+//!   if let Ok(tasks) = import(stdin()) {
+//!       for task in tasks {
+//!           println!("Task: {}, entered {:?} is {} -> {}",
+//!                     task.uuid(),
+//!                     task.entry(),
+//!                     task.status(),
+//!                     task.description());
+//!       }
+//!   }
+//! ```
+//!
+#![deny(missing_docs)]
 #![doc(html_root_url = "https://matthiasbeyer.github.io/task-hookrs/")]
 #![deny(
     dead_code,
