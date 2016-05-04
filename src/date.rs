@@ -1,3 +1,5 @@
+//! Module for wrapping chrono::naive::datetime::NaiveDateTime
+
 use std::error::Error;
 
 use serde::Serialize;

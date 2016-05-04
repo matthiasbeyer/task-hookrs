@@ -1,3 +1,5 @@
+//! Module containing `Result` type
+
 use std::result::Result as RResult;
 
 use error::TaskError;

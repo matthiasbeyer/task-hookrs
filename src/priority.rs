@@ -1,3 +1,5 @@
+//! Module containing TaskPriority types and trait impls
+
 use serde::Serialize;
 use serde::ser::Serializer;
 use serde::de::Deserialize;

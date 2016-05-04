@@ -1,3 +1,5 @@
+//! Module containing types and functions for annotations of tasks
+
 use std::result::Result as RResult;
 
 use serde::Serialize;

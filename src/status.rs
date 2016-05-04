@@ -1,3 +1,5 @@
+//! Module containing `TaskStatus` type and trait impls
+
 use serde::Serialize;
 use serde::Serializer;
 use serde::Deserialize;

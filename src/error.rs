@@ -1,3 +1,5 @@
+//! Error module, containing error types
+
 use std::error::Error;
 use std::fmt::Error as FmtError;
 use std::clone::Clone;

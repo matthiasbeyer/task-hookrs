@@ -1,3 +1,5 @@
+//! Module containing the `import()` function
+
 use std::io::Read;
 
 use serde_json;

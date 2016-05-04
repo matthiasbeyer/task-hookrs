@@ -1,3 +1,5 @@
+//! Module containing `Task` type as well as trait implementations
+
 use std::result::Result as RResult;
 
 use serde::Serialize;
