@@ -10,7 +10,10 @@ use std::fmt::{Display, Formatter};
 ///
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum TaskErrorKind {
+    /// Error kind indicating that the JSON parser failed
     ParserError,
+
+    /// Error kind indicating that the Status of a task is missing
     NoStatus,
 }
 
