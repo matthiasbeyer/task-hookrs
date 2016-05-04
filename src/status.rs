@@ -10,10 +10,19 @@ use serde::de::Visitor;
 /// Enum for status taskwarrior supports.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TaskStatus {
+    /// Pening status type
     Pending,
+
+    /// Deleted status type
     Deleted,
+
+    /// Completed status type
     Completed,
+
+    /// Waiting status type
     Waiting,
+
+    /// Recurring status type
     Recurring
 }
 
