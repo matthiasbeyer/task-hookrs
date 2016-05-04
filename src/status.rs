@@ -1,5 +1,8 @@
 //! Module containing `TaskStatus` type and trait impls
 
+use std::fmt::{Display, Formatter};
+use std::fmt::Error as FmtError;
+
 use serde::Serialize;
 use serde::Serializer;
 use serde::Deserialize;
@@ -24,6 +27,19 @@ pub enum TaskStatus {
 
     /// Recurring status type
     Recurring
+}
+
+impl Display for TaskStatus {
+
+    fn fmt(&self, fmt: &mut Formatter) -> Result<(), FmtError> {
+        match self {
+            &TaskStatus::Pending   => write!(fmt, "Pending"),
+            &TaskStatus::Deleted   => write!(fmt, "Deleted"),
+            &TaskStatus::Completed => write!(fmt, "Completed"),
+            &TaskStatus::Waiting   => write!(fmt, "Waiting"),
+            &TaskStatus::Recurring => write!(fmt, "Recurring"),
+        }
+    }
 }
 
 impl Serialize for TaskStatus {
