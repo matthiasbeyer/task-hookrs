@@ -17,6 +17,14 @@ pub fn import<R: Read>(r: R) -> Result<Vec<Task>> {
         })
 }
 
+/// Import a single JSON-formatted Task
+pub fn import_task(s : &str) -> Result<Task> {
+    serde_json::from_str(s)
+        .map_err(|e| {
+            TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e)))
+        })
+}
+
 #[test]
 fn test_one() {
     let s = r#"
@@ -98,3 +106,27 @@ fn test_two() {
     let imported = imported.unwrap();
     assert!(imported.len() == 3);
 }
+
+#[test]
+fn test_one_single() {
+    use status::TaskStatus;
+    let s = r#"
+{
+    "id": 1,
+    "description": "some description",
+    "entry": "20150619T165438Z",
+    "modified": "20160327T164007Z",
+    "project": "someproject",
+    "status": "waiting",
+    "tags": ["some", "tags", "are", "here"],
+    "uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0",
+    "wait": "20160508T164007Z",
+    "urgency": 0.583562
+}
+"#;
+    let imported = import_task(&s);
+    assert!(imported.is_ok());
+    let imported = imported.unwrap();
+    assert!(imported.status() == &TaskStatus::Waiting);
+}
+
