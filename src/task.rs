@@ -7,7 +7,6 @@ use serde::Serializer;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::de::Visitor;
-use serde::de::Error as SerdeError;
 use serde::ser::MapVisitor;
 use serde::de::MapVisitor as DeserializeMapVisitor;
 use uuid::Uuid;
