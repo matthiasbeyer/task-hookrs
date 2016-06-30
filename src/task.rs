@@ -39,7 +39,7 @@ pub struct Task {
     entry       : Date,
     description : String,
 
-    annotations : Option<Vec<Annotation>>,
+    annotations : Vec<Annotation>,
     depends     : Option<String>,
     due         : Option<Date>,
     end         : Option<Date>,
@@ -52,7 +52,7 @@ pub struct Task {
     recur       : Option<String>,
     scheduled   : Option<Date>,
     start       : Option<Date>,
-    tags        : Option<Vec<Tag>>,
+    tags        : Vec<Tag>,
     until       : Option<Date>,
     wait        : Option<Date>,
 }
@@ -94,7 +94,7 @@ impl Task {
             entry       : entry,
             description : description,
 
-            annotations : annotations,
+            annotations : annotations.unwrap_or(vec![]),
             depends     : depends,
             due         : due,
             end         : end,
@@ -107,7 +107,7 @@ impl Task {
             recur       : recur,
             scheduled   : scheduled,
             start       : start,
-            tags        : tags,
+            tags        : tags.unwrap_or(vec![]),
             until       : until,
             wait        : wait,
         }
@@ -135,19 +135,12 @@ impl Task {
 
     /// Get the annotations of the task
     pub fn annotations(&self) -> Option<&Vec<Annotation>> {
-        self.annotations.as_ref()
+        Some(&self.annotations)
     }
 
     /// Add an annotation to this task
     pub fn add_annotation(&mut self, an: Annotation) {
-        if self.annotations.is_none() {
-            self.annotations = Some(vec![an]);
-        } else {
-            match self.annotations.as_mut() {
-                Some(ref mut anno) => anno.push(an),
-                _ => unreachable!(),
-            }
-        }
+        self.annotations.push(an)
     }
 
     /// Add annotations to this task
@@ -223,7 +216,7 @@ impl Task {
 
     /// Get the tags of the task
     pub fn tags(&self) -> Option<&Vec<Tag>> {
-        self.tags.as_ref()
+        Some(&self.tags)
     }
 
     /// Get the until date of the task
