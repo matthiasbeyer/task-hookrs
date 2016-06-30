@@ -258,88 +258,95 @@ impl<'a> MapVisitor for TaskVisitor<'a> {
         match self.state {
             0 => {
                 self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("status", &self.value.status))))
+                return Ok(Some(try!(serializer.serialize_struct_elt("status", &self.value.status))))
             },
             1 => {
                 self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("uuid", &self.value.uuid))))
+                return Ok(Some(try!(serializer.serialize_struct_elt("uuid", &self.value.uuid))))
             },
             2 => {
                 self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("entry", &self.value.entry))))
+                return Ok(Some(try!(serializer.serialize_struct_elt("entry", &self.value.entry))))
             },
             3 => {
                 self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("description", &self.value.description))))
+                return Ok(Some(try!(serializer.serialize_struct_elt("description", &self.value.description))))
             },
             4 => {
                 self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("annotations", &self.value.annotations))))
+                return Ok(Some(try!(serializer.serialize_struct_elt("annotations", &self.value.annotations))))
             },
             5 => {
                 self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("depends", &self.value.depends))))
+                return Ok(Some(try!(serializer.serialize_struct_elt("tags", &self.value.tags))))
             },
-            6 => {
+            _ => loop {
+                debug!("{}", self.state);
+                match self.state {
+                    6 => if self.value.recur.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("recur", &self.value.recur))))
+                    },
+                    7 => if self.value.depends.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("depends", &self.value.depends))))
+                    },
+                    8 => if self.value.due.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("due", &self.value.due))))
+                    },
+                    9 => if self.value.end.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("end", &self.value.end))))
+                    },
+                    10 => if self.value.imask.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("imask", &self.value.imask))))
+                    },
+                    11 => if self.value.mask.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("mask", &self.value.mask))))
+                    },
+                    12 => if self.value.modified.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("modified", &self.value.modified))))
+                    },
+                    13 => if self.value.parent.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("parent", &self.value.parent))))
+                    },
+                    14 => if self.value.priority.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("priority", &self.value.priority))))
+                    },
+                    15 => if self.value.project.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("project", &self.value.project))))
+                    },
+                    16 => if self.value.scheduled.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("scheduled", &self.value.scheduled))))
+                    },
+                    17 => if self.value.start.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("start", &self.value.start))))
+                    },
+                    18 => if self.value.until.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("until", &self.value.until))))
+                    },
+                    19 => if self.value.wait.is_some() {
+                        self.state += 1;
+                        return Ok(Some(try!(serializer.serialize_struct_elt("wait", &self.value.wait))))
+                    },
+
+                    _ => return Ok(None),
+                }
+
                 self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("due", &self.value.due))))
-            },
-            7 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("end", &self.value.end))))
-            },
-            8 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("imask", &self.value.imask))))
-            },
-            9 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("mask", &self.value.mask))))
-            },
-            10 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("modified", &self.value.modified))))
-            },
-            11 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("parent", &self.value.parent))))
-            },
-            12 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("priority", &self.value.priority))))
-            },
-            13 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("project", &self.value.project))))
-            },
-            14 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("recur", &self.value.recur))))
-            },
-            15 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("scheduled", &self.value.scheduled))))
-            },
-            16 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("start", &self.value.start))))
-            },
-            17 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("tags", &self.value.tags))))
-            },
-            18 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("until", &self.value.until))))
-            },
-            19 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("wait", &self.value.wait))))
-            },
-            _ => {
-                Ok(None)
             }
         }
+        Ok(None)
     }
 
 }
