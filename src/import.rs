@@ -1,5 +1,6 @@
 //! Module containing the `import()` function
 
+use std::io::BufRead;
 use std::io::Read;
 
 use serde_json;
@@ -23,6 +24,16 @@ pub fn import_task(s : &str) -> Result<Task> {
         .map_err(|e| {
             TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e)))
         })
+}
+
+/// Reads line by line and tries to parse a task-object per line.
+pub fn import_tasks<BR: BufRead>(r : BR) -> Result<Vec<Task>> {
+    let vt = r.lines().filter_map(|l| l.ok())
+        .filter(|s| s.len() > 0)
+        .map(|s| import_task(s.as_str()))
+        .filter_map(|t| t.ok())
+        .collect();
+    Ok(vt)
 }
 
 #[test]
@@ -128,5 +139,20 @@ fn test_one_single() {
     assert!(imported.is_ok());
     let imported = imported.unwrap();
     assert!(imported.status() == &TaskStatus::Waiting);
+}
+
+#[test]
+fn test_two_single() {
+    use std::io::BufReader;
+    use status::TaskStatus;
+    let s = r#"
+{"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}
+{"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}"#;
+    let imported = import_tasks(BufReader::new(s.as_bytes()));
+    assert!(imported.is_ok());
+    let imported = imported.unwrap();
+    assert!(imported.len() == 2);
+    assert!(imported[0].status() == &TaskStatus::Waiting);
+    assert!(imported[1].status() == &TaskStatus::Waiting);
 }
 
