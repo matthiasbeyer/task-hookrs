@@ -6,7 +6,7 @@ authors = ["Matthias Beyer <mail@beyermatthias.de>"]
 description = "Crate to work with taskwarrior exported JSON"
 keywords = ["json", "taskwarrior", "todo", "import", "export"]
 
-documentation = "https://matthiasbeyer.github.io/task-hookrs/task-hookrs/index.html"
+documentation = "https://matthiasbeyer.github.io/task-hookrs/task_hookrs/index.html"
 homepage      = "https://github.com/matthiasbeyer/task-hookrs"
 repository    = "https://github.com/matthiasbeyer/task-hookrs"
 readme        = "./README.md"
