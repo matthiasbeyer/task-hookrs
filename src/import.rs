@@ -27,13 +27,21 @@ pub fn import_task(s : &str) -> Result<Task> {
 }
 
 /// Reads line by line and tries to parse a task-object per line.
-pub fn import_tasks<BR: BufRead>(r : BR) -> Result<Vec<Task>> {
-    let vt = r.lines().filter_map(|l| l.ok())
-        .filter(|s| s.len() > 0)
-        .map(|s| import_task(s.as_str()))
-        .filter_map(|t| t.ok())
-        .collect();
-    Ok(vt)
+pub fn import_tasks<BR: BufRead>(r : BR) -> Vec<Result<Task>> {
+    let mut vt = Vec::new();
+    for line in r.lines() {
+        if line.is_err() {
+            vt.push(Err(TaskError::new(TaskErrorKind::ReaderError, Some(Box::new(line.unwrap_err())))));
+            continue;
+        }
+        // Unwrap is safe because of continue above
+        if line.as_ref().unwrap().len() <= 0 {
+            // Empty strings are not usable, and shall be silently ignored
+            continue;
+        }
+        vt.push(import_task(line.unwrap().as_str()));
+    }
+    vt
 }
 
 #[test]
@@ -149,10 +157,12 @@ fn test_two_single() {
 {"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}
 {"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}"#;
     let imported = import_tasks(BufReader::new(s.as_bytes()));
-    assert!(imported.is_ok());
-    let imported = imported.unwrap();
     assert!(imported.len() == 2);
-    assert!(imported[0].status() == &TaskStatus::Waiting);
-    assert!(imported[1].status() == &TaskStatus::Waiting);
+    assert!(imported[0].is_ok());
+    assert!(imported[1].is_ok());
+    let import0 = imported[0].as_ref().unwrap();
+    let import1 = imported[1].as_ref().unwrap();
+    assert!(import0.status() == &TaskStatus::Waiting);
+    assert!(import1.status() == &TaskStatus::Waiting);
 }
 
