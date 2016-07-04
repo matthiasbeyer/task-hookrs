@@ -15,12 +15,16 @@ pub enum TaskErrorKind {
 
     /// Error kind indicating that the Status of a task is missing
     NoStatus,
+
+    /// Error kind indicating that the Reader failed to read something
+    ReaderError,
 }
 
 fn store_error_type_as_str(e: &TaskErrorKind) -> &'static str {
     match e {
         &TaskErrorKind::ParserError => "Parser Error",
         &TaskErrorKind::NoStatus    => "Task status is missing",
+        &TaskErrorKind::ReaderError => "Reader Error",
     }
 }
 
