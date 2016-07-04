@@ -129,6 +129,14 @@ fn test_two() {
 #[test]
 fn test_one_single() {
     use status::TaskStatus;
+    use date::Date;
+    use date::TASKWARRIOR_DATETIME_TEMPLATE;
+    use uuid::Uuid;
+    use chrono::naive::datetime::NaiveDateTime;
+    fn mkdate(s: &str) -> Date {
+        let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);
+        Date::from(n.unwrap())
+    }
     let s = r#"
 {
     "id": 1,
@@ -145,8 +153,26 @@ fn test_one_single() {
 "#;
     let imported = import_task(&s);
     assert!(imported.is_ok());
-    let imported = imported.unwrap();
-    assert!(imported.status() == &TaskStatus::Waiting);
+
+    // Check for every information
+    let task = imported.unwrap();
+    assert!(task.status() == &TaskStatus::Waiting);
+    assert!(task.description() == "some description");
+    assert!(task.entry().clone() == mkdate("20150619T165438Z"));
+    assert!(task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap());
+    assert!(task.modified() == Some(&mkdate("20160327T164007Z")));
+    assert!(task.project() == Some(&String::from("someproject")));
+    if let Some(tags) = task.tags() {
+        for tag in tags {
+            let any_tag = [ "some", "tags", "are", "here", ]
+                .into_iter().any(|t| tag == *t);
+            assert!(any_tag, "Tag {} missing", tag);
+        }
+    } else {
+        assert!(false, "Tags completely missing");
+    }
+
+    assert!(task.wait() == Some(&mkdate("20160508T164007Z")));
 }
 
 #[test]
