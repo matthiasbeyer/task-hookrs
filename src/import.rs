@@ -1,5 +1,6 @@
 //! Module containing the `import()` function
 
+use std::io::BufRead;
 use std::io::Read;
 
 use serde_json;
@@ -15,6 +16,32 @@ pub fn import<R: Read>(r: R) -> Result<Vec<Task>> {
         .map_err(|e| {
             TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e)))
         })
+}
+
+/// Import a single JSON-formatted Task
+pub fn import_task(s : &str) -> Result<Task> {
+    serde_json::from_str(s)
+        .map_err(|e| {
+            TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e)))
+        })
+}
+
+/// Reads line by line and tries to parse a task-object per line.
+pub fn import_tasks<BR: BufRead>(r : BR) -> Vec<Result<Task>> {
+    let mut vt = Vec::new();
+    for line in r.lines() {
+        if line.is_err() {
+            vt.push(Err(TaskError::new(TaskErrorKind::ReaderError, Some(Box::new(line.unwrap_err())))));
+            continue;
+        }
+        // Unwrap is safe because of continue above
+        if line.as_ref().unwrap().len() <= 0 {
+            // Empty strings are not usable, and shall be silently ignored
+            continue;
+        }
+        vt.push(import_task(line.unwrap().as_str()));
+    }
+    vt
 }
 
 #[test]
@@ -98,3 +125,70 @@ fn test_two() {
     let imported = imported.unwrap();
     assert!(imported.len() == 3);
 }
+
+#[test]
+fn test_one_single() {
+    use status::TaskStatus;
+    use date::Date;
+    use date::TASKWARRIOR_DATETIME_TEMPLATE;
+    use uuid::Uuid;
+    use chrono::naive::datetime::NaiveDateTime;
+    fn mkdate(s: &str) -> Date {
+        let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);
+        Date::from(n.unwrap())
+    }
+    let s = r#"
+{
+    "id": 1,
+    "description": "some description",
+    "entry": "20150619T165438Z",
+    "modified": "20160327T164007Z",
+    "project": "someproject",
+    "status": "waiting",
+    "tags": ["some", "tags", "are", "here"],
+    "uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0",
+    "wait": "20160508T164007Z",
+    "urgency": 0.583562
+}
+"#;
+    let imported = import_task(&s);
+    assert!(imported.is_ok());
+
+    // Check for every information
+    let task = imported.unwrap();
+    assert!(task.status() == &TaskStatus::Waiting);
+    assert!(task.description() == "some description");
+    assert!(task.entry().clone() == mkdate("20150619T165438Z"));
+    assert!(task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap());
+    assert!(task.modified() == Some(&mkdate("20160327T164007Z")));
+    assert!(task.project() == Some(&String::from("someproject")));
+    if let Some(tags) = task.tags() {
+        for tag in tags {
+            let any_tag = [ "some", "tags", "are", "here", ]
+                .into_iter().any(|t| tag == *t);
+            assert!(any_tag, "Tag {} missing", tag);
+        }
+    } else {
+        assert!(false, "Tags completely missing");
+    }
+
+    assert!(task.wait() == Some(&mkdate("20160508T164007Z")));
+}
+
+#[test]
+fn test_two_single() {
+    use std::io::BufReader;
+    use status::TaskStatus;
+    let s = r#"
+{"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}
+{"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}"#;
+    let imported = import_tasks(BufReader::new(s.as_bytes()));
+    assert!(imported.len() == 2);
+    assert!(imported[0].is_ok());
+    assert!(imported[1].is_ok());
+    let import0 = imported[0].as_ref().unwrap();
+    let import1 = imported[1].as_ref().unwrap();
+    assert!(import0.status() == &TaskStatus::Waiting);
+    assert!(import1.status() == &TaskStatus::Waiting);
+}
+
