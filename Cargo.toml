@@ -1,7 +1,9 @@
 [package]
 name = "task-hookrs"
-version = "0.1.0"
-authors = ["Matthias Beyer <mail@beyermatthias.de>"]
+version = "0.2.0"
+authors = ["Matthias Beyer <mail@beyermatthias.de>",
+           "Mario Krehl <mario-krehl@gmx.de>",
+          ]
 
 description = "Crate to work with taskwarrior exported JSON"
 keywords = ["json", "taskwarrior", "todo", "import", "export"]
