@@ -1,7 +1,9 @@
 [package]
 name = "task-hookrs"
-version = "0.1.0"
-authors = ["Matthias Beyer <mail@beyermatthias.de>"]
+version = "0.2.0"
+authors = ["Matthias Beyer <mail@beyermatthias.de>",
+           "Mario Krehl <mario-krehl@gmx.de>",
+          ]
 
 description = "Crate to work with taskwarrior exported JSON"
 keywords = ["json", "taskwarrior", "todo", "import", "export"]
@@ -13,12 +15,12 @@ readme        = "./README.md"
 license       = "LGPL-2.1"
 
 [dependencies]
-chrono = "0.2.20"
-log = "0.3.5"
-serde = "0.7.0"
-serde_json = "0.7.0"
-uuid = { version = "0.2.0", features = ["serde"] }
+chrono = "0.2.22"
+log = "0.3.6"
+serde = "0.7.13"
+serde_json = "0.7.4"
+uuid = { version = "0.2.2", features = ["serde"] }
 
 [dev-dependencies]
-env_logger = "0.3.2"
+env_logger = "0.3.3"
 
