@@ -1,3 +1,5 @@
+//! Module containing the types for User Defined Attributes (UDA)
+
 /// UDA Name
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub struct UDAName(String);
