@@ -5,8 +5,14 @@
 
 * [crate](https://crates.io/crates/task-hookrs/)
 * [Documentation](https://matthiasbeyer.github.io/task-hookrs/task_hookrs/index.html)
-* [![Build Status](https://travis-ci.org/matthiasbeyer/task-hookrs.svg?branch=master)](https://travis-ci.org/matthiasbeyer/task-hookrs)
 * [travis-ci](https://travis-ci.org/matthiasbeyer/task-hookrs)
+
+[![Build Status](https://travis-ci.org/matthiasbeyer/task-hookrs.svg?branch=master)](https://travis-ci.org/matthiasbeyer/task-hookrs)
+[![GitHub tag](https://img.shields.io/github/tag/matthiasbeyer/task-hookrs.svg?maxAge=2592000)]()
+[![Crates.io](https://img.shields.io/crates/v/task-hookrs.svg?maxAge=2592000)]()
+[![Crates.io](https://img.shields.io/crates/d/task-hookrs.svg?maxAge=2592000)]()
+[![Crates.io](https://img.shields.io/crates/dv/task-hookrs.svg?maxAge=2592000)]()
+[![Crates.io](https://img.shields.io/crates/l/task-hookrs.svg?maxAge=2592000)]()
 
 `task-hookrs` is able to import and export the JSON taskwarrior understands, so
 you can write taskwarrior hooks without having to deal with the JSON
