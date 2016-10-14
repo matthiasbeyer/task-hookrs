@@ -1,6 +1,6 @@
 [package]
 name = "task-hookrs"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Matthias Beyer <mail@beyermatthias.de>",
            "Mario Krehl <mario-krehl@gmx.de>",
           ]
@@ -12,7 +12,7 @@ documentation = "https://matthiasbeyer.github.io/task-hookrs/task_hookrs/index.h
 homepage      = "https://github.com/matthiasbeyer/task-hookrs"
 repository    = "https://github.com/matthiasbeyer/task-hookrs"
 readme        = "./README.md"
-license       = "LGPL-2.1"
+license       = "MPL-2.0"
 
 [dependencies]
 chrono = "0.2.22"
