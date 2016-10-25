@@ -13,7 +13,6 @@ use serde::Serializer;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::de::Visitor;
-use serde::ser::MapVisitor;
 use serde::de::MapVisitor as DeserializeMapVisitor;
 
 use date::Date;
@@ -54,38 +53,10 @@ impl Serialize for Annotation {
     fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
         where S: Serializer
     {
-        serializer.serialize_struct("Annotation", AnnotationVisitor {
-            value: self,
-            state: 0,
-        })
-    }
-
-}
-
-/// Helper type for the `Serialize` implementation
-struct AnnotationVisitor<'a> {
-    value: &'a Annotation,
-    state: u8,
-}
-
-impl<'a> MapVisitor for AnnotationVisitor<'a> {
-
-    fn visit<S>(&mut self, serializer: &mut S) -> RResult<Option<()>, S::Error>
-        where S: Serializer
-    {
-        match self.state {
-            0 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("entry", &self.value.entry))))
-            },
-            1 => {
-                self.state += 1;
-                Ok(Some(try!(serializer.serialize_struct_elt("description", &self.value.description))))
-            },
-            _ => {
-                Ok(None)
-            }
-        }
+        let mut state = try!(serializer.serialize_struct("Annotation", 2));
+        try!(serializer.serialize_struct_elt(&mut state, "entry", &self.entry));
+        try!(serializer.serialize_struct_elt(&mut state, "description", &self.description));
+        serializer.serialize_struct_end(state)
     }
 
 }

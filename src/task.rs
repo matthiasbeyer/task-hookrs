@@ -13,7 +13,6 @@ use serde::Serializer;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::de::Visitor;
-use serde::ser::MapVisitor;
 use serde::de::MapVisitor as DeserializeMapVisitor;
 use uuid::Uuid;
 
@@ -242,117 +241,72 @@ impl Serialize for Task {
     fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
         where S: Serializer
     {
-        serializer.serialize_struct("Task", TaskVisitor {
-            value: self,
-            state: 0,
-        })
-    }
+        let mut state = try!(serializer.serialize_struct("Task", 19));
+        try!(serializer.serialize_struct_elt(&mut state, "status", &self.status));
+        try!(serializer.serialize_struct_elt(&mut state, "uuid", &self.uuid));
+        try!(serializer.serialize_struct_elt(&mut state, "entry", &self.entry));
+        try!(serializer.serialize_struct_elt(&mut state, "description", &self.description));
+        try!(serializer.serialize_struct_elt(&mut state, "annotations", &self.annotations));
+        try!(serializer.serialize_struct_elt(&mut state, "tags", &self.tags));
 
-}
-
-/// Helper type for task serialization
-struct TaskVisitor<'a> {
-    value: &'a Task,
-    state: u8,
-}
-
-impl<'a> MapVisitor for TaskVisitor<'a> {
-
-    fn visit<S>(&mut self, serializer: &mut S) -> RResult<Option<()>, S::Error>
-        where S: Serializer
-    {
-        match self.state {
-            0 => {
-                self.state += 1;
-                return Ok(Some(try!(serializer.serialize_struct_elt("status", &self.value.status))))
-            },
-            1 => {
-                self.state += 1;
-                return Ok(Some(try!(serializer.serialize_struct_elt("uuid", &self.value.uuid))))
-            },
-            2 => {
-                self.state += 1;
-                return Ok(Some(try!(serializer.serialize_struct_elt("entry", &self.value.entry))))
-            },
-            3 => {
-                self.state += 1;
-                return Ok(Some(try!(serializer.serialize_struct_elt("description", &self.value.description))))
-            },
-            4 => {
-                self.state += 1;
-                return Ok(Some(try!(serializer.serialize_struct_elt("annotations", &self.value.annotations))))
-            },
-            5 => {
-                self.state += 1;
-                return Ok(Some(try!(serializer.serialize_struct_elt("tags", &self.value.tags))))
-            },
-            _ => loop {
-                debug!("{}", self.state);
-                match self.state {
-                    6 => if self.value.recur.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("recur", &self.value.recur))))
-                    },
-                    7 => if self.value.depends.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("depends", &self.value.depends))))
-                    },
-                    8 => if self.value.due.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("due", &self.value.due))))
-                    },
-                    9 => if self.value.end.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("end", &self.value.end))))
-                    },
-                    10 => if self.value.imask.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("imask", &self.value.imask))))
-                    },
-                    11 => if self.value.mask.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("mask", &self.value.mask))))
-                    },
-                    12 => if self.value.modified.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("modified", &self.value.modified))))
-                    },
-                    13 => if self.value.parent.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("parent", &self.value.parent))))
-                    },
-                    14 => if self.value.priority.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("priority", &self.value.priority))))
-                    },
-                    15 => if self.value.project.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("project", &self.value.project))))
-                    },
-                    16 => if self.value.scheduled.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("scheduled", &self.value.scheduled))))
-                    },
-                    17 => if self.value.start.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("start", &self.value.start))))
-                    },
-                    18 => if self.value.until.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("until", &self.value.until))))
-                    },
-                    19 => if self.value.wait.is_some() {
-                        self.state += 1;
-                        return Ok(Some(try!(serializer.serialize_struct_elt("wait", &self.value.wait))))
-                    },
-
-                    _ => return Ok(None),
-                }
-
-                self.state += 1;
-            }
+        match self.recur {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "recur", v)),
+            None => { },
         }
-        Ok(None)
+        match self.depends {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "depends", v)),
+            None => { },
+        }
+        match self.due {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "due", v)),
+            None => { },
+        }
+        match self.end {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "end", v)),
+            None => { },
+        }
+        match self.imask {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "imask", v)),
+            None => { },
+        }
+        match self.mask {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "mask", v)),
+            None => { },
+        }
+        match self.modified {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "modified", v)),
+            None => { },
+        }
+        match self.parent {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "parent", v)),
+            None => { },
+        }
+        match self.priority {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "priority", v)),
+            None => { },
+        }
+        match self.project {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "project", v)),
+            None => { },
+        }
+        match self.scheduled {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "scheduled", v)),
+            None => { },
+        }
+        match self.start {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "start", v)),
+            None => { },
+        }
+        match self.until {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "until", v)),
+            None => { },
+        }
+        match self.wait {
+            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "wait", v)),
+            None => { },
+        }
+
+        serializer.serialize_struct_end(state)
     }
 
 }
