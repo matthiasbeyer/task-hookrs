@@ -23,7 +23,7 @@ use project::Project;
 use tag::Tag;
 use date::Date;
 use annotation::Annotation;
-use uda::{UDAName, UDAValue};
+use uda::{UDA, UDAName, UDAValue};
 
 /// Task type
 ///
@@ -61,7 +61,8 @@ pub struct Task {
     tags        : Option<Vec<Tag>>,
     until       : Option<Date>,
     wait        : Option<Date>,
-    uda         : BTreeMap<UDAName, UDAValue>,
+
+    uda         : UDA,
 }
 
 /*
@@ -93,7 +94,7 @@ impl Task {
         tags        : Option<Vec<Tag>>,
         until       : Option<Date>,
         wait        : Option<Date>,
-        uda         : BTreeMap<UDAName, UDAValue>,
+        uda         : UDA,
     ) -> Task
     {
         Task {
@@ -327,11 +328,12 @@ impl Task {
         self.wait.as_mut()
     }
     /// Get the BTreeMap that contains the UDA
-    pub fn uda(&self) -> &BTreeMap<UDAName, UDAValue> {
+    pub fn uda(&self) -> &UDA {
         &self.uda
+    }
 
     /// Get the BTreeMap that contains the UDA mutable
-    pub fn uda(&mut self) -> &mut BTreeMap<UDAName, UDAValue> {
+    pub fn uda(&mut self) -> &mut UDA {
         &self.uda
 }
 
@@ -473,6 +475,7 @@ impl Visitor for TaskDeserializeVisitor {
         let mut tags        = None;
         let mut until       = None;
         let mut wait        = None;
+        let mut uda         = UDA::default();
 
         loop {
             let key : Option<String> = try!(visitor.visit_key());
@@ -545,10 +548,9 @@ impl Visitor for TaskDeserializeVisitor {
                 },
 
                 field => {
-                    use serde::de::impls::IgnoredAny;
-
-                    debug!("field '{}' ignored", field);
-                    let _: IgnoredAny = try!(visitor.visit_value());
+                    debug!("Inserting '{}' as UDA", field);
+                    let s : String = try!(visitor.visit_value());
+                    uda.insert(UDAName::from(field), UDAValue::from(s));
                 }
             }
         }
@@ -596,7 +598,8 @@ impl Visitor for TaskDeserializeVisitor {
             start,
             tags,
             until,
-            wait
+            wait,
+            uda
         );
 
         Ok(task)
