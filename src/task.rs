@@ -407,6 +407,8 @@ impl Serialize for Task {
             None => { },
         }
 
+        try!(serializer.serialize_struct_elt(&mut state, "uda", &self.uda));
+
         serializer.serialize_struct_end(state)
     }
 
@@ -438,7 +440,8 @@ impl Deserialize for Task {
             "start",
             "tags",
             "until",
-            "wait"
+            "wait",
+            "uda"
         ];
         deserializer.deserialize_struct("Task", FIELDS, TaskDeserializeVisitor)
     }
