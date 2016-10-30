@@ -45,7 +45,7 @@ impl Deserialize for UDAName {
     fn deserialize<D>(deserializer: &mut D) -> RResult<UDAName, D::Error>
         where D: Deserializer
     {
-        String::deseralize(deserializer).map(|s| UDAName(s))
+        String::deserialize(deserializer).map(|s| UDAName(s))
     }
 
 }
@@ -85,7 +85,7 @@ impl Deserialize for UDAValue {
     fn deserialize<D>(deserializer: &mut D) -> RResult<UDAValue, D::Error>
         where D: Deserializer
     {
-        String::deseralize(deserializer).map(|s| UDAValue(s))
+        String::deserialize(deserializer).map(|s| UDAValue(s))
     }
 
 }
