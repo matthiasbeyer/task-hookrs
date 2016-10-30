@@ -3,6 +3,12 @@
 use std::ops::{Deref, DerefMut};
 use std::default::Default;
 use std::collections::BTreeMap;
+use std::result::Result as RResult;
+
+use serde::Serialize;
+use serde::Serializer;
+use serde::Deserialize;
+use serde::Deserializer;
 
 /// UDA Name
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
@@ -24,6 +30,26 @@ impl From<String> for UDAName {
 
 }
 
+impl Serialize for UDAName {
+
+    fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
+        where S: Serializer
+    {
+        self.0.serialize(serializer)
+    }
+
+}
+
+impl Deserialize for UDAName {
+
+    fn deserialize<D>(deserializer: &mut D) -> RResult<UDAName, D::Error>
+        where D: Deserializer
+    {
+        String::deseralize(deserializer).map(|s| UDAName(s))
+    }
+
+}
+
 /// UDA Value
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub struct UDAValue(String);
@@ -40,6 +66,26 @@ impl From<String> for UDAValue {
 
     fn from(s: String) -> UDAValue {
         UDAValue(s)
+    }
+
+}
+
+impl Serialize for UDAValue {
+
+    fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
+        where S: Serializer
+    {
+        self.0.serialize(serializer)
+    }
+
+}
+
+impl Deserialize for UDAValue {
+
+    fn deserialize<D>(deserializer: &mut D) -> RResult<UDAValue, D::Error>
+        where D: Deserializer
+    {
+        String::deseralize(deserializer).map(|s| UDAValue(s))
     }
 
 }
@@ -70,6 +116,26 @@ impl Default for UDA {
 
     fn default() -> UDA {
         UDA(BTreeMap::new())
+    }
+
+}
+
+impl Serialize for UDA {
+
+    fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
+        where S: Serializer
+    {
+        self.0.serialize(serializer)
+    }
+
+}
+
+impl Deserialize for UDA {
+
+    fn deserialize<D>(deserializer: &mut D) -> RResult<UDA, D::Error>
+        where D: Deserializer
+    {
+        BTreeMap::deserialize(deserializer).map(|btm| UDA(btm))
     }
 
 }
