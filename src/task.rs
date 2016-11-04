@@ -570,8 +570,8 @@ impl Visitor for TaskDeserializeVisitor {
 
                 field => {
                     debug!("Inserting '{}' as UDA", field);
-                    let s : String = try!(visitor.visit_value());
-                    uda.insert(UDAName::from(field), UDAValue::from(s));
+                    let uda_value : UDAValue = try!(visitor.visit_value());
+                    uda.insert(UDAName::from(field), uda_value);
                 }
             }
         }

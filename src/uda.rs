@@ -51,23 +51,11 @@ impl Deserialize for UDAName {
 }
 
 /// UDA Value
-#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
-pub struct UDAValue(String);
-
-impl<'a> From<&'a str> for UDAValue {
-
-    fn from(s: &str) -> UDAValue {
-        UDAValue(String::from(s))
-    }
-
-}
-
-impl From<String> for UDAValue {
-
-    fn from(s: String) -> UDAValue {
-        UDAValue(s)
-    }
-
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
+pub enum UDAValue {
+    Str(String),
+    U64(u64),
+    F64(f64),
 }
 
 impl Serialize for UDAValue {
@@ -75,7 +63,11 @@ impl Serialize for UDAValue {
     fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
         where S: Serializer
     {
-        self.0.serialize(serializer)
+        match self {
+            &UDAValue::Str(ref s) => s.serialize(serializer),
+            &UDAValue::U64(s) => s.serialize(serializer),
+            &UDAValue::F64(s) => s.serialize(serializer),
+        }
     }
 
 }
@@ -85,7 +77,7 @@ impl Deserialize for UDAValue {
     fn deserialize<D>(deserializer: &mut D) -> RResult<UDAValue, D::Error>
         where D: Deserializer
     {
-        String::deserialize(deserializer).map(|s| UDAValue(s))
+        unimplemented!()
     }
 
 }
