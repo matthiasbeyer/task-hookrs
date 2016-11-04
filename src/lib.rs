@@ -50,6 +50,9 @@ extern crate serde;
 extern crate serde_json;
 extern crate uuid;
 
+#[cfg(test)]
+extern crate env_logger;
+
 pub mod annotation;
 pub mod date;
 pub mod error;

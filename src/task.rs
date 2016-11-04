@@ -621,6 +621,12 @@ mod test {
     use chrono::NaiveDateTime;
     use serde_json;
 
+    fn mklogger() {
+        use env_logger;
+        let _ = env_logger::init();
+        debug!("Env-logger enabled");
+    }
+
     fn mkdate(s: &str) -> Date {
         let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);
         Date::from(n.unwrap())
@@ -663,6 +669,7 @@ r#"{
 
     #[test]
     fn test_deser_more() {
+        mklogger();
         let s =
 r#"{
 "id": 1,
