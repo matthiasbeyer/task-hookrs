@@ -41,6 +41,8 @@ use uda::{UDA, UDAName, UDAValue};
 /// tasks is simply serializing and deserializing objects of this type.
 #[derive(Debug, Clone)]
 pub struct Task {
+    id          : Option<u64>,
+
     status      : TaskStatus,
     uuid        : Uuid,
     entry       : Date,
@@ -73,6 +75,8 @@ impl Task {
 
     /// Create a new Task instance
     pub fn new(
+        id          : Option<u64>,
+
         status      : TaskStatus,
         uuid        : Uuid,
         entry       : Date,
@@ -98,6 +102,7 @@ impl Task {
     ) -> Task
     {
         Task {
+            id          : id,
             status      : status,
             uuid        : uuid,
             entry       : entry,
@@ -121,6 +126,11 @@ impl Task {
             wait        : wait,
             uda         : uda,
         }
+    }
+
+    /// Get the id of the task
+    pub fn id(&self) -> Option<u64> {
+        self.id
     }
 
     /// Get the status of the task
@@ -343,6 +353,7 @@ impl Serialize for Task {
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("Task", 19));
+        try!(serializer.serialize_struct_elt(&mut state, "id", self.id));
         try!(serializer.serialize_struct_elt(&mut state, "status", &self.status));
         try!(serializer.serialize_struct_elt(&mut state, "uuid", &self.uuid));
         try!(serializer.serialize_struct_elt(&mut state, "entry", &self.entry));
@@ -420,6 +431,7 @@ impl Deserialize for Task {
         where D: Deserializer
     {
         static FIELDS: &'static [&'static str] = &[
+            "id",
             "status",
             "uuid",
             "entry",
@@ -457,6 +469,8 @@ impl Visitor for TaskDeserializeVisitor {
     fn visit_map<V>(&mut self, mut visitor: V) -> RResult<Task, V::Error>
         where V: DeserializeMapVisitor
     {
+        let mut id          = None;
+
         let mut status      = None;
         let mut uuid        = None;
         let mut entry       = None;
@@ -488,6 +502,10 @@ impl Visitor for TaskDeserializeVisitor {
             let key = key.unwrap();
 
             match &key[..] {
+                "id" => {
+                    id = Some(try!(visitor.visit_value()));
+                },
+
                 "status" => {
                     status = Some(try!(visitor.visit_value()));
                 },
@@ -581,6 +599,7 @@ impl Visitor for TaskDeserializeVisitor {
         try!(visitor.end());
 
         let task = Task::new(
+            id,
             status,
             uuid,
             entry,
