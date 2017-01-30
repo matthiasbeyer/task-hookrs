@@ -55,10 +55,12 @@ impl Serialize for Annotation {
     fn serialize<S>(&self, serializer: S) -> RResult<S::Ok, S::Error>
         where S: Serializer
     {
+        use serde::ser::SerializeStruct;
+
         let mut state = try!(serializer.serialize_struct("Annotation", 2));
-        try!(serializer.serialize_struct_elt(&mut state, "entry", &self.entry));
-        try!(serializer.serialize_struct_elt(&mut state, "description", &self.description));
-        serializer.serialize_struct_end(state)
+        try!(state.serialize_field("entry", &self.entry));
+        try!(state.serialize_field("description", &self.description));
+        state.end()
     }
 
 }
@@ -91,6 +93,8 @@ impl Visitor for AnnotationDeserializeVisitor {
     fn visit_map<V>(self, mut visitor: V) -> RResult<Annotation, V::Error>
         where V: DeserializeMapVisitor
     {
+        use serde::de::Error;
+
         let mut entry       = None;
         let mut description = None;
 
@@ -120,15 +124,13 @@ impl Visitor for AnnotationDeserializeVisitor {
 
         let entry = match entry {
             Some(entry) => entry,
-            None => try!(visitor.missing_field("entry")),
+            None => return Err(V::Error::missing_field("entry")),
         };
 
         let description = match description {
             Some(description) => description,
-            None => try!(visitor.missing_field("description")),
+            None => return Err(V::Error::missing_field("description")),
         };
-
-        try!(visitor.end());
 
         Ok(Annotation::new(entry, description))
     }
