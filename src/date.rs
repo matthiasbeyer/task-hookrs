@@ -8,6 +8,8 @@
 
 use std::error::Error;
 use std::ops::{Deref, DerefMut};
+use std::fmt::Formatter;
+use std::fmt::Result as FmtResult;
 
 use serde::Serialize;
 use serde::Serializer;
@@ -69,6 +71,10 @@ impl Deserialize for Date {
 
         impl Visitor for DateVisitor {
             type Value = Date;
+
+            fn expecting(&self, fmt: &mut Formatter) -> FmtResult {
+                write!(fmt, "a taskwarrior time string")
+            }
 
             fn visit_str<E>(&mut self, value: &str) -> Result<Date, E>
                 where E: SerdeError

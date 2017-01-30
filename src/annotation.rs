@@ -7,6 +7,8 @@
 //! Module containing types and functions for annotations of tasks
 
 use std::result::Result as RResult;
+use std::fmt::Formatter;
+use std::fmt::Result as FmtResult;
 
 use serde::Serialize;
 use serde::Serializer;
@@ -81,6 +83,10 @@ struct AnnotationDeserializeVisitor;
 
 impl Visitor for AnnotationDeserializeVisitor {
     type Value = Annotation;
+
+    fn expecting(&self, fmt: &mut Formatter) -> FmtResult {
+        write!(fmt, "a taskwarrior annotation object")
+    }
 
     fn visit_map<V>(&mut self, mut visitor: V) -> RResult<Annotation, V::Error>
         where V: DeserializeMapVisitor

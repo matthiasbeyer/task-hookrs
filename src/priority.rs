@@ -13,6 +13,9 @@ use serde::de::Deserializer;
 use serde::Error;
 use serde::de::Visitor;
 
+use std::fmt::Formatter;
+use std::fmt::Result as FmtResult;
+
 /// Enum for the priorities taskwarrior supports.
 #[derive(Debug, Clone, PartialEq)]
 pub enum TaskPriority {
@@ -52,6 +55,10 @@ impl Deserialize for TaskPriority {
 
         impl Visitor for TaskPriorityVisitor {
             type Value = TaskPriority;
+
+            fn expecting(&self, fmt: &mut Formatter) -> FmtResult {
+                write!(fmt, "one of 'L', 'M', 'H'")
+            }
 
             fn visit_str<E>(&mut self, value: &str) -> Result<TaskPriority, E>
                 where E: Error

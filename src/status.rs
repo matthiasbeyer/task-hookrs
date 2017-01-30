@@ -8,6 +8,7 @@
 
 use std::fmt::{Display, Formatter};
 use std::fmt::Error as FmtError;
+use std::fmt::Result as FmtResult;
 
 use serde::Serialize;
 use serde::Serializer;
@@ -74,6 +75,10 @@ impl Deserialize for TaskStatus {
 
         impl Visitor for TaskStatusVisitor {
             type Value = TaskStatus;
+
+            fn expecting(&self, fmt: &mut Formatter) -> FmtResult {
+                write!(fmt, "a taskwarrior status ('pending', 'deleted', ...)")
+            }
 
             fn visit_str<E>(&mut self, value: &str) -> Result<TaskStatus, E>
                 where E: Error

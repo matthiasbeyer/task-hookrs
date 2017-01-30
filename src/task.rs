@@ -7,6 +7,8 @@
 //! Module containing `Task` type as well as trait implementations
 
 use std::result::Result as RResult;
+use std::fmt::Formatter;
+use std::fmt::Result as FmtResult;
 
 use serde::Serialize;
 use serde::Serializer;
@@ -349,6 +351,10 @@ struct TaskDeserializeVisitor;
 
 impl Visitor for TaskDeserializeVisitor {
     type Value = Task;
+
+    fn expecting(&self, fmt: &mut Formatter) -> FmtResult {
+        write!(fmt, "a taskwarrior exported JSON object")
+    }
 
     fn visit_map<V>(&mut self, mut visitor: V) -> RResult<Task, V::Error>
         where V: DeserializeMapVisitor
