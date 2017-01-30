@@ -10,7 +10,7 @@ use serde::Serialize;
 use serde::ser::Serializer;
 use serde::de::Deserialize;
 use serde::de::Deserializer;
-use serde::Error;
+use serde::de::Error as DeError;
 use serde::de::Visitor;
 
 use std::fmt::Formatter;
@@ -61,13 +61,13 @@ impl Deserialize for TaskPriority {
             }
 
             fn visit_str<E>(self, value: &str) -> Result<TaskPriority, E>
-                where E: Error
+                where E: DeError
             {
                 match value {
                     "L" => Ok(TaskPriority::Low),
                     "M" => Ok(TaskPriority::Medium),
                     "H" => Ok(TaskPriority::High),
-                    _ => Err(Error::custom("expected one of 'L', 'M', 'H'")),
+                    _ => Err(DeError::custom("expected one of 'L', 'M', 'H'")),
                 }
             }
         }
