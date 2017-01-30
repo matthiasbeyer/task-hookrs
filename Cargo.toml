@@ -17,8 +17,8 @@ license       = "MPL-2.0"
 [dependencies]
 chrono = "0.2"
 log = "0.3"
-serde = "0.8"
-serde_json = "0.8"
+serde = "0.9"
+serde_json = "0.9"
 uuid = { version = "0.3", features = ["serde"] }
 
 [dev-dependencies]
