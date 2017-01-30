@@ -51,7 +51,7 @@ impl Display for TaskStatus {
 
 impl Serialize for TaskStatus {
 
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(
@@ -68,7 +68,7 @@ impl Serialize for TaskStatus {
 }
 
 impl Deserialize for TaskStatus {
-    fn deserialize<D>(deserializer: &mut D) -> Result<TaskStatus, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<TaskStatus, D::Error>
         where D: Deserializer
     {
         struct TaskStatusVisitor;
@@ -80,7 +80,7 @@ impl Deserialize for TaskStatus {
                 write!(fmt, "a taskwarrior status ('pending', 'deleted', ...)")
             }
 
-            fn visit_str<E>(&mut self, value: &str) -> Result<TaskStatus, E>
+            fn visit_str<E>(self, value: &str) -> Result<TaskStatus, E>
                 where E: Error
             {
                 match value {

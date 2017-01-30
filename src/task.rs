@@ -240,7 +240,7 @@ impl Task {
 
 impl Serialize for Task {
 
-    fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> RResult<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("Task", 19));
@@ -315,7 +315,7 @@ impl Serialize for Task {
 
 impl Deserialize for Task {
 
-    fn deserialize<D>(deserializer: &mut D) -> RResult<Task, D::Error>
+    fn deserialize<D>(deserializer: D) -> RResult<Task, D::Error>
         where D: Deserializer
     {
         static FIELDS: &'static [&'static str] = &[
@@ -356,7 +356,7 @@ impl Visitor for TaskDeserializeVisitor {
         write!(fmt, "a taskwarrior exported JSON object")
     }
 
-    fn visit_map<V>(&mut self, mut visitor: V) -> RResult<Task, V::Error>
+    fn visit_map<V>(self, mut visitor: V) -> RResult<Task, V::Error>
         where V: DeserializeMapVisitor
     {
         let mut status      = None;

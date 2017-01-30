@@ -32,7 +32,7 @@ pub enum TaskPriority {
 
 impl Serialize for TaskPriority {
 
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(
@@ -48,7 +48,7 @@ impl Serialize for TaskPriority {
 
 impl Deserialize for TaskPriority {
 
-    fn deserialize<D>(deserializer: &mut D) -> Result<TaskPriority, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<TaskPriority, D::Error>
         where D: Deserializer
     {
         struct TaskPriorityVisitor;
@@ -60,7 +60,7 @@ impl Deserialize for TaskPriority {
                 write!(fmt, "one of 'L', 'M', 'H'")
             }
 
-            fn visit_str<E>(&mut self, value: &str) -> Result<TaskPriority, E>
+            fn visit_str<E>(self, value: &str) -> Result<TaskPriority, E>
                 where E: Error
             {
                 match value {

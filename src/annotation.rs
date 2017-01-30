@@ -52,7 +52,7 @@ impl Annotation {
 
 impl Serialize for Annotation {
 
-    fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> RResult<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("Annotation", 2));
@@ -65,7 +65,7 @@ impl Serialize for Annotation {
 
 impl Deserialize for Annotation {
 
-    fn deserialize<D>(deserializer: &mut D) -> RResult<Annotation, D::Error>
+    fn deserialize<D>(deserializer: D) -> RResult<Annotation, D::Error>
         where D: Deserializer
     {
         static FIELDS: &'static [&'static str] = &[
@@ -88,7 +88,7 @@ impl Visitor for AnnotationDeserializeVisitor {
         write!(fmt, "a taskwarrior annotation object")
     }
 
-    fn visit_map<V>(&mut self, mut visitor: V) -> RResult<Annotation, V::Error>
+    fn visit_map<V>(self, mut visitor: V) -> RResult<Annotation, V::Error>
         where V: DeserializeMapVisitor
     {
         let mut entry       = None;
