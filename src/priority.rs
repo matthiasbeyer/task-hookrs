@@ -10,12 +10,15 @@
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TaskPriority {
     /// Low prio for a Task
+    #[serde(rename = "L")]
     Low,
 
     /// Medium prio for a Task
+    #[serde(rename = "M")]
     Medium,
 
     /// High prio for a Task
+    #[serde(rename = "H")]
     High,
 }
 
