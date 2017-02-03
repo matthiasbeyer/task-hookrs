@@ -6,33 +6,29 @@
 
 //! Module containing `TaskStatus` type and trait impls
 
-use std::fmt::{Display, Formatter};
-use std::fmt::Error as FmtError;
-use std::fmt::Result as FmtResult;
-
-use serde::Serialize;
-use serde::Serializer;
-use serde::Deserialize;
-use serde::Deserializer;
-use serde::de::Error;
-use serde::de::Visitor;
+use std::fmt::{Display, Formatter, Error as FmtError};
 
 /// Enum for status taskwarrior supports.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub enum TaskStatus {
     /// Pening status type
+    #[serde(rename = "pending")]
     Pending,
 
     /// Deleted status type
+    #[serde(rename = "deleted")]
     Deleted,
 
     /// Completed status type
+    #[serde(rename = "completed")]
     Completed,
 
     /// Waiting status type
+    #[serde(rename = "waiting")]
     Waiting,
 
     /// Recurring status type
+    #[serde(rename = "recurring")]
     Recurring
 }
 
@@ -46,55 +42,6 @@ impl Display for TaskStatus {
             &TaskStatus::Waiting   => write!(fmt, "Waiting"),
             &TaskStatus::Recurring => write!(fmt, "Recurring"),
         }
-    }
-}
-
-impl Serialize for TaskStatus {
-
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-    {
-        serializer.serialize_str(
-            match self {
-                &TaskStatus::Pending   => "pending",
-                &TaskStatus::Deleted   => "deleted",
-                &TaskStatus::Completed => "completed",
-                &TaskStatus::Waiting   => "waiting",
-                &TaskStatus::Recurring => "recurring",
-            }
-        )
-    }
-
-}
-
-impl Deserialize for TaskStatus {
-    fn deserialize<D>(deserializer: D) -> Result<TaskStatus, D::Error>
-        where D: Deserializer
-    {
-        struct TaskStatusVisitor;
-
-        impl Visitor for TaskStatusVisitor {
-            type Value = TaskStatus;
-
-            fn expecting(&self, fmt: &mut Formatter) -> FmtResult {
-                write!(fmt, "a taskwarrior status ('pending', 'deleted', ...)")
-            }
-
-            fn visit_str<E>(self, value: &str) -> Result<TaskStatus, E>
-                where E: Error
-            {
-                match value {
-                    "pending"   => Ok(TaskStatus::Pending),
-                    "deleted"   => Ok(TaskStatus::Deleted),
-                    "completed" => Ok(TaskStatus::Completed),
-                    "waiting"   => Ok(TaskStatus::Waiting),
-                    "recurring" => Ok(TaskStatus::Recurring),
-                    _           => Err(Error::custom("expected one of pending, deleted, completed, waiting, recurring")),
-                }
-            }
-        }
-
-        deserializer.deserialize(TaskStatusVisitor)
     }
 }
 

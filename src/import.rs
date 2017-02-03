@@ -126,10 +126,7 @@ fn test_two() {
 
 "#;
 
-    let imported = import(s.as_bytes());
-    assert!(imported.is_ok());
-    let imported = imported.unwrap();
-    assert!(imported.len() == 3);
+    assert!(import(s.as_bytes()).unwrap().len() == 3);
 }
 
 #[test]
