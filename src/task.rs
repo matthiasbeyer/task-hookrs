@@ -36,21 +36,52 @@ pub struct Task {
     entry       : Date,
     description : String,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     annotations : Option<Vec<Annotation>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     depends     : Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     due         : Option<Date>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     end         : Option<Date>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     imask       : Option<i64>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     mask        : Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     modified    : Option<Date>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     parent      : Option<Uuid>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     priority    : Option<TaskPriority>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     project     : Option<Project>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     recur       : Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     scheduled   : Option<Date>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     start       : Option<Date>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     tags        : Option<Vec<Tag>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     until       : Option<Date>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     wait        : Option<Date>,
 }
 
