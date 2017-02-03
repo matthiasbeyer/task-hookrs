@@ -15,13 +15,10 @@ script: |
   # prepare taskwarrior, initial setup
   yes | task
 
-  for n in create_task; do
-    cargo run --example "$n" | tee /tmp/"$n"
-    task import /tmp/"$n" || exit 0
+  cargo run --example create_task | tee /tmp/create_task
+  task import /tmp/create_task || exit 1
 
-    # delete all tasks
-    yes | task delete
-  done
+  cat /tmp/create_task | cargo run --example import_task || exit 1
 
 after_success: |
   [ $TRAVIS_BRANCH = master ] &&
