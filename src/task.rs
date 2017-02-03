@@ -7,6 +7,8 @@
 //! Module containing `Task` type as well as trait implementations
 
 use std::result::Result as RResult;
+use std::fmt::Formatter;
+use std::fmt::Result as FmtResult;
 
 use serde::Serialize;
 use serde::Serializer;
@@ -238,82 +240,84 @@ impl Task {
 
 impl Serialize for Task {
 
-    fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> RResult<S::Ok, S::Error>
         where S: Serializer
     {
+        use serde::ser::SerializeStruct;
+
         let mut state = try!(serializer.serialize_struct("Task", 19));
-        try!(serializer.serialize_struct_elt(&mut state, "status", &self.status));
-        try!(serializer.serialize_struct_elt(&mut state, "uuid", &self.uuid));
-        try!(serializer.serialize_struct_elt(&mut state, "entry", &self.entry));
-        try!(serializer.serialize_struct_elt(&mut state, "description", &self.description));
-        try!(serializer.serialize_struct_elt(&mut state, "annotations", &self.annotations));
-        try!(serializer.serialize_struct_elt(&mut state, "tags", &self.tags));
+        try!(state.serialize_field("status", &self.status));
+        try!(state.serialize_field("uuid", &self.uuid));
+        try!(state.serialize_field("entry", &self.entry));
+        try!(state.serialize_field("description", &self.description));
+        try!(state.serialize_field("annotations", &self.annotations));
+        try!(state.serialize_field("tags", &self.tags));
 
         match self.recur {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "recur", v)),
+            Some(ref v) => try!(state.serialize_field("recur", v)),
             None => { },
         }
         match self.depends {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "depends", v)),
+            Some(ref v) => try!(state.serialize_field("depends", v)),
             None => { },
         }
         match self.due {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "due", v)),
+            Some(ref v) => try!(state.serialize_field("due", v)),
             None => { },
         }
         match self.end {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "end", v)),
+            Some(ref v) => try!(state.serialize_field("end", v)),
             None => { },
         }
         match self.imask {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "imask", v)),
+            Some(ref v) => try!(state.serialize_field("imask", v)),
             None => { },
         }
         match self.mask {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "mask", v)),
+            Some(ref v) => try!(state.serialize_field("mask", v)),
             None => { },
         }
         match self.modified {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "modified", v)),
+            Some(ref v) => try!(state.serialize_field("modified", v)),
             None => { },
         }
         match self.parent {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "parent", v)),
+            Some(ref v) => try!(state.serialize_field("parent", v)),
             None => { },
         }
         match self.priority {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "priority", v)),
+            Some(ref v) => try!(state.serialize_field("priority", v)),
             None => { },
         }
         match self.project {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "project", v)),
+            Some(ref v) => try!(state.serialize_field("project", v)),
             None => { },
         }
         match self.scheduled {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "scheduled", v)),
+            Some(ref v) => try!(state.serialize_field("scheduled", v)),
             None => { },
         }
         match self.start {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "start", v)),
+            Some(ref v) => try!(state.serialize_field("start", v)),
             None => { },
         }
         match self.until {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "until", v)),
+            Some(ref v) => try!(state.serialize_field("until", v)),
             None => { },
         }
         match self.wait {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "wait", v)),
+            Some(ref v) => try!(state.serialize_field("wait", v)),
             None => { },
         }
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 
 }
 
 impl Deserialize for Task {
 
-    fn deserialize<D>(deserializer: &mut D) -> RResult<Task, D::Error>
+    fn deserialize<D>(deserializer: D) -> RResult<Task, D::Error>
         where D: Deserializer
     {
         static FIELDS: &'static [&'static str] = &[
@@ -350,9 +354,15 @@ struct TaskDeserializeVisitor;
 impl Visitor for TaskDeserializeVisitor {
     type Value = Task;
 
-    fn visit_map<V>(&mut self, mut visitor: V) -> RResult<Task, V::Error>
+    fn expecting(&self, fmt: &mut Formatter) -> FmtResult {
+        write!(fmt, "a taskwarrior exported JSON object")
+    }
+
+    fn visit_map<V>(self, mut visitor: V) -> RResult<Task, V::Error>
         where V: DeserializeMapVisitor
     {
+        use serde::de::Error;
+
         let mut status      = None;
         let mut uuid        = None;
         let mut entry       = None;
@@ -456,25 +466,23 @@ impl Visitor for TaskDeserializeVisitor {
 
         let status = match status {
             Some(status) => status,
-            None => try!(visitor.missing_field("status")),
+            None => return Err(V::Error::missing_field("status")),
         };
 
         let uuid = match uuid {
             Some(uuid) => uuid,
-            None => try!(visitor.missing_field("uuid")),
+            None => return Err(V::Error::missing_field("uuid")),
         };
 
         let entry = match entry {
             Some(entry) => entry,
-            None => try!(visitor.missing_field("entry")),
+            None => return Err(V::Error::missing_field("entry")),
         };
 
         let description = match description {
             Some(description) => description,
-            None => try!(visitor.missing_field("description")),
+            None => return Err(V::Error::missing_field("description")),
         };
-
-        try!(visitor.end());
 
         let task = Task::new(
             status,

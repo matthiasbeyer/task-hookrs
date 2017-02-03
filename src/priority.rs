@@ -10,8 +10,11 @@ use serde::Serialize;
 use serde::ser::Serializer;
 use serde::de::Deserialize;
 use serde::de::Deserializer;
-use serde::Error;
+use serde::de::Error as DeError;
 use serde::de::Visitor;
+
+use std::fmt::Formatter;
+use std::fmt::Result as FmtResult;
 
 /// Enum for the priorities taskwarrior supports.
 #[derive(Debug, Clone, PartialEq)]
@@ -29,7 +32,7 @@ pub enum TaskPriority {
 
 impl Serialize for TaskPriority {
 
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(
@@ -45,7 +48,7 @@ impl Serialize for TaskPriority {
 
 impl Deserialize for TaskPriority {
 
-    fn deserialize<D>(deserializer: &mut D) -> Result<TaskPriority, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<TaskPriority, D::Error>
         where D: Deserializer
     {
         struct TaskPriorityVisitor;
@@ -53,14 +56,18 @@ impl Deserialize for TaskPriority {
         impl Visitor for TaskPriorityVisitor {
             type Value = TaskPriority;
 
-            fn visit_str<E>(&mut self, value: &str) -> Result<TaskPriority, E>
-                where E: Error
+            fn expecting(&self, fmt: &mut Formatter) -> FmtResult {
+                write!(fmt, "one of 'L', 'M', 'H'")
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<TaskPriority, E>
+                where E: DeError
             {
                 match value {
                     "L" => Ok(TaskPriority::Low),
                     "M" => Ok(TaskPriority::Medium),
                     "H" => Ok(TaskPriority::High),
-                    _ => Err(Error::custom("expected one of 'L', 'M', 'H'")),
+                    _ => Err(DeError::custom("expected one of 'L', 'M', 'H'")),
                 }
             }
         }

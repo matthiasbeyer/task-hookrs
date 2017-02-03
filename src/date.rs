@@ -8,6 +8,8 @@
 
 use std::error::Error;
 use std::ops::{Deref, DerefMut};
+use std::fmt::Formatter;
+use std::fmt::Result as FmtResult;
 
 use serde::Serialize;
 use serde::Serializer;
@@ -51,7 +53,7 @@ pub static TASKWARRIOR_DATETIME_TEMPLATE : &'static str = "%Y%m%dT%H%M%SZ";
 
 impl Serialize for Date {
 
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let formatted = self.0.format(TASKWARRIOR_DATETIME_TEMPLATE);
@@ -62,7 +64,7 @@ impl Serialize for Date {
 
 impl Deserialize for Date {
 
-    fn deserialize<D>(deserializer: &mut D) -> Result<Date, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Date, D::Error>
         where D: Deserializer
     {
         struct DateVisitor;
@@ -70,7 +72,11 @@ impl Deserialize for Date {
         impl Visitor for DateVisitor {
             type Value = Date;
 
-            fn visit_str<E>(&mut self, value: &str) -> Result<Date, E>
+            fn expecting(&self, fmt: &mut Formatter) -> FmtResult {
+                write!(fmt, "a taskwarrior time string")
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<Date, E>
                 where E: SerdeError
             {
                 NaiveDateTime::parse_from_str(value, TASKWARRIOR_DATETIME_TEMPLATE)

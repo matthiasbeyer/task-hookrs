@@ -7,6 +7,8 @@
 //! Module containing types and functions for annotations of tasks
 
 use std::result::Result as RResult;
+use std::fmt::Formatter;
+use std::fmt::Result as FmtResult;
 
 use serde::Serialize;
 use serde::Serializer;
@@ -50,20 +52,22 @@ impl Annotation {
 
 impl Serialize for Annotation {
 
-    fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> RResult<S::Ok, S::Error>
         where S: Serializer
     {
+        use serde::ser::SerializeStruct;
+
         let mut state = try!(serializer.serialize_struct("Annotation", 2));
-        try!(serializer.serialize_struct_elt(&mut state, "entry", &self.entry));
-        try!(serializer.serialize_struct_elt(&mut state, "description", &self.description));
-        serializer.serialize_struct_end(state)
+        try!(state.serialize_field("entry", &self.entry));
+        try!(state.serialize_field("description", &self.description));
+        state.end()
     }
 
 }
 
 impl Deserialize for Annotation {
 
-    fn deserialize<D>(deserializer: &mut D) -> RResult<Annotation, D::Error>
+    fn deserialize<D>(deserializer: D) -> RResult<Annotation, D::Error>
         where D: Deserializer
     {
         static FIELDS: &'static [&'static str] = &[
@@ -82,9 +86,15 @@ struct AnnotationDeserializeVisitor;
 impl Visitor for AnnotationDeserializeVisitor {
     type Value = Annotation;
 
-    fn visit_map<V>(&mut self, mut visitor: V) -> RResult<Annotation, V::Error>
+    fn expecting(&self, fmt: &mut Formatter) -> FmtResult {
+        write!(fmt, "a taskwarrior annotation object")
+    }
+
+    fn visit_map<V>(self, mut visitor: V) -> RResult<Annotation, V::Error>
         where V: DeserializeMapVisitor
     {
+        use serde::de::Error;
+
         let mut entry       = None;
         let mut description = None;
 
@@ -114,15 +124,13 @@ impl Visitor for AnnotationDeserializeVisitor {
 
         let entry = match entry {
             Some(entry) => entry,
-            None => try!(visitor.missing_field("entry")),
+            None => return Err(V::Error::missing_field("entry")),
         };
 
         let description = match description {
             Some(description) => description,
-            None => try!(visitor.missing_field("description")),
+            None => return Err(V::Error::missing_field("description")),
         };
-
-        try!(visitor.end());
 
         Ok(Annotation::new(entry, description))
     }
