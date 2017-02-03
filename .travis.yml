@@ -6,6 +6,20 @@ rust:
 matrix:
   allow_failures:
     - rust: nightly
+before_install:
+  - sudo apt-get -y install task
+script: |
+  cargo build
+  cargo test
+
+  # prepare taskwarrior, initial setup
+  yes | task
+
+  cargo run --example create_task | tee /tmp/create_task
+  task import /tmp/create_task || exit 1
+
+  cat /tmp/create_task | cargo run --example import_task || exit 1
+
 after_success: |
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
