@@ -12,18 +12,23 @@ use std::fmt::{Display, Formatter, Error as FmtError};
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub enum TaskStatus {
     /// Pening status type
+    #[serde(rename = "pending")]
     Pending,
 
     /// Deleted status type
+    #[serde(rename = "deleted")]
     Deleted,
 
     /// Completed status type
+    #[serde(rename = "completed")]
     Completed,
 
     /// Waiting status type
+    #[serde(rename = "waiting")]
     Waiting,
 
     /// Recurring status type
+    #[serde(rename = "recurring")]
     Recurring
 }
 
