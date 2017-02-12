@@ -37,7 +37,8 @@ use uda::{UDA, UDAName, UDAValue};
 ///
 /// It is deserializeable and serializeable via serde_json, so importing and exporting taskwarrior
 /// tasks is simply serializing and deserializing objects of this type.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Builder)]
+#[builder(setter_prefix = "with")]
 pub struct Task {
     id: Option<u64>,
 
@@ -854,6 +855,21 @@ mod test {
         assert!(back.contains("-17.1234"));
         assert!(back.contains("test_int_uda"));
         assert!(back.contains("1234"));
+    }
+
+    #[test]
+    fn test_builder_simple() {
+        use task::builder::TaskBuilder;
+
+        let t = TaskBuilder::default()
+            .with_status(TaskStatus::Pending)
+            .with_description("test".into_string())
+            .with_entry(mkdate("20150619T165438Z"))
+            .build();
+
+        assert_eq!(t.status(), TaskStatus::Pending);
+        assert_eq!(t.description(), "test".into_string());
+        assert_eq!(t.entry(), mkdate("20150619T165438Z"));
     }
 
 }
