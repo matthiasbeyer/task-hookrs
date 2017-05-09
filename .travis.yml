@@ -29,14 +29,12 @@ after_success: |
   sudo pip install ghp-import &&
   ghp-import -n target/doc &&
   git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
-
 notifications:
   irc:
     channels:
-      - "chat.freenode.net#imag"
+    - chat.freenode.net#imag
     template:
-      - "%{repository_name} (%{branch} @ %{commit} by %{author}): %{result}"
-
+    - "%{repository_name} (%{branch} @ %{commit} by %{author}): %{result}"
 env:
   global:
-    secure: "VbHRzoQ8nYNB1acbCUqoHz0Vvki5SC71mzt04B3jPNIAFFEZ8+45769tEmOQ8vygzwIp2QaFzlG48CLGG/ne+NG1kS2sdGt0gakvGq0PMNBLUodtX9zGmc6GNGrFaJ9FlgYzUy8mRZSod93aHiH5W4IBfeJASUh1IOxSsoQ4qMvQG/g4yXto4RPazH+mBWUl0ClDuduC0n2Lt9/DPXCpbXn/wR/4fHIMG7yMg0DKFsvfJ8XgkwJG68BX3fJTsrnLuI8UG2ZmxYeNl2PhwlM5dfFXN6WmlRm8hhr0+t35YgpaP/DmM3qP2n5IVkYfn3L/R5dCVLLi/DVhhv2qTxNi6elQxBdawlFG0F/q4djKgg/iTtK0g2hjKYuP993JOfDDNMNKhkjaqSqror78zj+h4G+JNcajNINuj+cVCnNnU2UwwoHJ2rc+SynvMxra2M9frGpfgzU75rWf9v8yRcklEmVghkKHkIGPRaVITC/aasoe4UcYlQmoO4nQAMrzcDiP9YcE0qsJqtZ2XzaopnSMWnLVQCNuwgNAOkhDEt/TXj/JdQFvWqBs0oqePF63iDx/qrRpgHXwEqIFa2YPd8Kurhiv7NeqWpT06YbOO5FwJOvsrLZvfL9gtbUpoV9pXi8K3w/YmrR2YCBF0UWRoh85Z4eXkFm0+3yXZq5WVGkpt+U="
+  - secure: JQSfBaqgF/QZDo498E0EhpAjtjcq02sMP7c8UoCnFMJLPYGj0EGQM/B0UsvvzwyJnTTodzd/iHQ09CX8updBg2YjyyopW0urcA7la6CRKIV+5mc303OtPHori77VCG5lhsGqMNkm1IWet07aUhvfD/RP1HF0OlMdUGWe7FhczzX0KsiakIv/rUsQoSulMi8svg5a51//FsfUNiVrGS2wfOupjjWneJmEWS+X3pBzY5rCYJNphCPKPDmqYt577UhFV2pbZq1mkF1K6CiIj3fjdaGSMU2gvIrAx9UWXS5qpZQQJyEkv/YVzHqN9P+Cdo6uaJQN1XBrQfCRm3TywsfBKnJasJBUydf/ChJcjdbVzsTYmOdOerwUpAQY7I8YW5TnOdjVtqsSOoPch1vUsh2OSLLOkViwiwC5fZAvpc/b6Ij2kyY07oEAGc2PpBdixss23teTtvRbKtLjgwQCHJf0zJUBqXsjl/CLGXc4UfctxyHMxG3MJkNZt25yzV+c6CWAjOv5ts4pNJBcksD8tmUnkHnDZE1EGFMp3urSW4/N5NC59nl2p2fsz1lpaoYzQweS9jxH0HjnwZJw0/1JksfPjcInBxTDLRfOa/YVPpRTOdlcf2SqU28uCkGOsOaHRKrwVx5MRWmtWH6qRrmgxIh1GaT/JDCg288/lf1QkBjd/bU=
