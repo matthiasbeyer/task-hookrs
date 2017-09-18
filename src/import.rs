@@ -135,7 +135,7 @@ fn test_one_single() {
     use date::Date;
     use date::TASKWARRIOR_DATETIME_TEMPLATE;
     use uuid::Uuid;
-    use chrono::naive::datetime::NaiveDateTime;
+    use chrono::NaiveDateTime;
     fn mkdate(s: &str) -> Date {
         let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);
         Date::from(n.unwrap())
