@@ -8,8 +8,6 @@
 
 use std::error::Error;
 use std::ops::{Deref, DerefMut};
-use std::fmt::Formatter;
-use std::fmt::Result as FmtResult;
 
 use serde::Serialize;
 use serde::Serializer;
@@ -17,7 +15,7 @@ use serde::Deserialize;
 use serde::Deserializer;
 use serde::de::Visitor;
 use serde::de::Error as SerdeError;
-use chrono::naive::datetime::NaiveDateTime;
+use chrono::NaiveDateTime;
 
 /// Date is a NaiveDateTime-Wrapper object to be able to implement foreign traits on it
 #[derive(Clone, Debug, Hash, Eq, PartialEq)]
@@ -62,18 +60,18 @@ impl Serialize for Date {
 
 }
 
-impl Deserialize for Date {
+impl<'de> Deserialize<'de> for Date {
 
     fn deserialize<D>(deserializer: D) -> Result<Date, D::Error>
-        where D: Deserializer
+        where D: Deserializer<'de>
     {
         struct DateVisitor;
 
-        impl Visitor for DateVisitor {
+        impl<'v> Visitor<'v> for DateVisitor {
             type Value = Date;
 
-            fn expecting(&self, fmt: &mut Formatter) -> FmtResult {
-                write!(fmt, "a taskwarrior time string")
+            fn expecting(&self, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                write!(fmt, "a string which matches {}", TASKWARRIOR_DATETIME_TEMPLATE)
             }
 
             fn visit_str<E>(self, value: &str) -> Result<Date, E>
@@ -85,7 +83,7 @@ impl Deserialize for Date {
             }
         }
 
-        deserializer.deserialize(DateVisitor)
+        deserializer.deserialize_str(DateVisitor)
     }
 
 }

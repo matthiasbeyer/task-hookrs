@@ -271,7 +271,7 @@ mod test {
     use annotation::Annotation;
 
     use uuid::Uuid;
-    use chrono::naive::datetime::NaiveDateTime;
+    use chrono::NaiveDateTime;
     use serde_json;
 
     fn mkdate(s: &str) -> Date {
