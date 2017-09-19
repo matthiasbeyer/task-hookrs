@@ -32,9 +32,19 @@ impl Annotation {
         &self.entry
     }
 
+    /// Get the entry date mutable
+    pub fn entry_mut(&mut self) -> &mut Date {
+        &mut self.entry
+    }
+
     /// Get the description text
     pub fn description(&self) -> &String {
         &self.description
+    }
+
+    /// Get the description text mutable
+    pub fn description_mut(&mut self) -> &mut String {
+        &mut self.description
     }
 
 }

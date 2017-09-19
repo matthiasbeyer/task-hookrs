@@ -146,9 +146,19 @@ impl Task {
         &self.status
     }
 
+    /// Get the status of the task mutable
+    pub fn status_mut(&mut self) -> &mut TaskStatus {
+        &mut self.status
+    }
+
     /// Get the uuid of the task
     pub fn uuid(&self) -> &Uuid {
         &self.uuid
+    }
+
+    /// Get the uuid of the task mutable
+    pub fn uuid_mut(&mut self) -> &mut Uuid {
+        &mut self.uuid
     }
 
     /// Get the entry date of the task
@@ -156,9 +166,19 @@ impl Task {
         &self.entry
     }
 
+    /// Get the entry date of the task mutable
+    pub fn entry_mut(&mut self) -> &mut Date {
+        &mut self.entry
+    }
+
     /// Get the description of the task
     pub fn description(&self) -> &String {
         &self.description
+    }
+
+    /// Get the description of the task mutable
+    pub fn description_mut(&mut self) -> &mut String {
+        &mut self.description
     }
 
     /// Get the annotations of the task
@@ -166,19 +186,9 @@ impl Task {
         self.annotations.as_ref()
     }
 
-    /// Add an annotation to this task
-    pub fn add_annotation(&mut self, an: Annotation) {
-        match self.annotations {
-            None => self.annotations = Some(vec![an]),
-            Some(ref mut n) => n.push(an),
-        }
-    }
-
-    /// Add annotations to this task
-    pub fn add_annotations<I: Iterator<Item = Annotation>>(&mut self, i: I) {
-        for item in i {
-            self.add_annotation(item)
-        }
+    /// Get the annotations of the task mutable
+    pub fn annotations_mut(&mut self) -> Option<&mut Vec<Annotation>> {
+        self.annotations.as_mut()
     }
 
     /// Get the depends of the task
@@ -188,9 +198,19 @@ impl Task {
         self.depends.as_ref()
     }
 
+    /// This is exported as String by now, which might change in future mutable
+    pub fn depends_mut(&mut self) -> Option<&mut String> {
+        self.depends.as_mut()
+    }
+
     /// Get the due date of the task
     pub fn due(&self) -> Option<&Date> {
         self.due.as_ref()
+    }
+
+    /// Get the due date of the task mutable
+    pub fn due_mut(&mut self) -> Option<&mut Date> {
+        self.due.as_mut()
     }
 
     /// Get the end date of the task
@@ -198,9 +218,19 @@ impl Task {
         self.end.as_ref()
     }
 
+    /// Get the end date of the task mutable
+    pub fn end_mut(&mut self) -> Option<&mut Date> {
+        self.end.as_mut()
+    }
+
     /// Get the imask of the task
     pub fn imask(&self) -> Option<&i64> {
         self.imask.as_ref()
+    }
+
+    /// Get the imask of the task mutable
+    pub fn imask_mut(&mut self) -> Option<&mut i64> {
+        self.imask.as_mut()
     }
 
     /// Get the mask of the task
@@ -208,9 +238,19 @@ impl Task {
         self.mask.as_ref()
     }
 
+    /// Get the mask of the task mutable
+    pub fn mask_mut(&mut self) -> Option<&mut String> {
+        self.mask.as_mut()
+    }
+
     /// Get the modified date of the task
     pub fn modified(&self) -> Option<&Date> {
         self.modified.as_ref()
+    }
+
+    /// Get the modified date of the task mutable
+    pub fn modified_mut(&mut self) -> Option<&mut Date> {
+        self.modified.as_mut()
     }
 
     /// Get the parent of the task
@@ -218,14 +258,29 @@ impl Task {
         self.parent.as_ref()
     }
 
+    /// Get the parent of the task mutable
+    pub fn parent_mut(&mut self) -> Option<&mut Uuid> {
+        self.parent.as_mut()
+    }
+
     /// Get the priority of the task
     pub fn priority(&self) -> Option<&TaskPriority> {
         self.priority.as_ref()
     }
 
+    /// Get the priority of the task mutable
+    pub fn priority_mut(&mut self) -> Option<&mut TaskPriority> {
+        self.priority.as_mut()
+    }
+
     /// Get the project of the task
     pub fn project(&self) -> Option<&Project> {
         self.project.as_ref()
+    }
+
+    /// Get the project of the task mutable
+    pub fn project_mut(&mut self) -> Option<&mut Project> {
+        self.project.as_mut()
     }
 
     /// Get the recur of the task
@@ -235,9 +290,20 @@ impl Task {
         self.recur.as_ref()
     }
 
+    /// This is exported as String by now. This might change in future versions of this crate.
+    /// mutable
+    pub fn recur_mut(&mut self) -> Option<&mut String> {
+        self.recur.as_mut()
+    }
+
     /// Get the scheduled date of the task
     pub fn scheduled(&self) -> Option<&Date> {
         self.scheduled.as_ref()
+    }
+
+    /// Get the scheduled date of the task mutable
+    pub fn scheduled_mut(&mut self) -> Option<&mut Date> {
+        self.scheduled.as_mut()
     }
 
     /// Get the start date of the task
@@ -245,9 +311,19 @@ impl Task {
         self.start.as_ref()
     }
 
+    /// Get the start date of the task mutable
+    pub fn start_mut(&mut self) -> Option<&mut Date> {
+        self.start.as_mut()
+    }
+
     /// Get the tags of the task
     pub fn tags(&self) -> Option<&Vec<Tag>> {
         self.tags.as_ref()
+    }
+
+    /// Get the tags of the task mutable
+    pub fn tags_mut(&mut self) -> Option<&mut Vec<Tag>> {
+        self.tags.as_mut()
     }
 
     /// Get the until date of the task
@@ -255,9 +331,19 @@ impl Task {
         self.until.as_ref()
     }
 
+    /// Get the until date of the task mutable
+    pub fn until_mut(&mut self) -> Option<&mut Date> {
+        self.until.as_mut()
+    }
+
     /// Get the wait date of the task
     pub fn wait(&self) -> Option<&Date> {
         self.wait.as_ref()
+    }
+
+    /// Get the wait date of the task mutable
+    pub fn wait_mut(&mut self) -> Option<&mut Date> {
+        self.wait.as_mut()
     }
 
 }
