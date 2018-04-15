@@ -4,6 +4,10 @@ This changelog was started with the 0.4.0 release.
 
 ## Next
 
+## 0.5.0
+
+* The "uuid" dependency was updated from 0.5 to 0.6
+
 ## 0.4.0
 
 * Dependencies updated
