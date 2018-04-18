@@ -11,7 +11,7 @@ use std::fmt;
 
 use serde::Serialize;
 use serde::Serializer;
-use serde::ser::SerializeStruct;
+use serde::ser::SerializeMap;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::de::Visitor;
@@ -354,61 +354,63 @@ impl Serialize for Task {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Task", 19)?;
-        state.serialize_field("status", &self.status)?;
-        state.serialize_field("uuid", &self.uuid)?;
-        state.serialize_field("entry", &self.entry)?;
-        state.serialize_field("description", &self.description)?;
+        let mut state = serializer.serialize_map(None)?;
+        state.serialize_entry("status", &self.status)?;
+        state.serialize_entry("uuid", &self.uuid)?;
+        state.serialize_entry("entry", &self.entry)?;
+        state.serialize_entry("description", &self.description)?;
 
         self.annotations.as_ref().map(|v| {
-            state.serialize_field("annotations", v)
+            state.serialize_entry("annotations", v)
         });
-        self.tags.as_ref().map(|v| state.serialize_field("tags", v));
-        self.id.as_ref().map(|v| state.serialize_field("id", v));
+        self.tags.as_ref().map(|v| state.serialize_entry("tags", v));
+        self.id.as_ref().map(|v| state.serialize_entry("id", v));
         self.recur.as_ref().map(
-            |ref v| state.serialize_field("recur", v),
+            |ref v| state.serialize_entry("recur", v),
         );
         self.depends.as_ref().map(|ref v| {
-            state.serialize_field("depends", v)
+            state.serialize_entry("depends", v)
         });
         self.due.as_ref().map(
-            |ref v| state.serialize_field("due", v),
+            |ref v| state.serialize_entry("due", v),
         );
         self.end.as_ref().map(
-            |ref v| state.serialize_field("end", v),
+            |ref v| state.serialize_entry("end", v),
         );
         self.imask.as_ref().map(
-            |ref v| state.serialize_field("imask", v),
+            |ref v| state.serialize_entry("imask", v),
         );
         self.mask.as_ref().map(
-            |ref v| state.serialize_field("mask", v),
+            |ref v| state.serialize_entry("mask", v),
         );
         self.modified.as_ref().map(|ref v| {
-            state.serialize_field("modified", v)
+            state.serialize_entry("modified", v)
         });
         self.parent.as_ref().map(|ref v| {
-            state.serialize_field("parent", v)
+            state.serialize_entry("parent", v)
         });
         self.priority.as_ref().map(|ref v| {
-            state.serialize_field("priority", v)
+            state.serialize_entry("priority", v)
         });
         self.project.as_ref().map(|ref v| {
-            state.serialize_field("project", v)
+            state.serialize_entry("project", v)
         });
         self.scheduled.as_ref().map(|ref v| {
-            state.serialize_field("scheduled", v)
+            state.serialize_entry("scheduled", v)
         });
         self.start.as_ref().map(
-            |ref v| state.serialize_field("start", v),
+            |ref v| state.serialize_entry("start", v),
         );
         self.until.as_ref().map(
-            |ref v| state.serialize_field("until", v),
+            |ref v| state.serialize_entry("until", v),
         );
         self.wait.as_ref().map(
-            |ref v| state.serialize_field("wait", v),
+            |ref v| state.serialize_entry("wait", v),
         );
 
-        state.serialize_field("uda", &self.uda)?;
+        for (key, value) in self.uda().iter() {
+            state.serialize_entry(key, value)?;
+        }
 
         state.end()
     }
