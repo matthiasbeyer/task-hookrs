@@ -7,14 +7,16 @@
 //! Module containing `Task` type as well as trait implementations
 
 use std::result::Result as RResult;
-use std::collections::BTreeMap;
+use std::fmt;
 
 use serde::Serialize;
 use serde::Serializer;
+use serde::ser::SerializeStruct;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::de::Visitor;
-use serde::de::MapVisitor as DeserializeMapVisitor;
+use serde::de::Error;
+use serde::de::MapAccess;
 use uuid::Uuid;
 
 use priority::TaskPriority;
@@ -41,30 +43,30 @@ use uda::{UDA, UDAName, UDAValue};
 /// tasks is simply serializing and deserializing objects of this type.
 #[derive(Debug, Clone)]
 pub struct Task {
-    id          : Option<u64>,
+    id: Option<u64>,
 
-    status      : TaskStatus,
-    uuid        : Uuid,
-    entry       : Date,
-    description : String,
-    annotations : Option<Vec<Annotation>>,
-    depends     : Option<String>,
-    due         : Option<Date>,
-    end         : Option<Date>,
-    imask       : Option<i64>,
-    mask        : Option<String>,
-    modified    : Option<Date>,
-    parent      : Option<Uuid>,
-    priority    : Option<TaskPriority>,
-    project     : Option<Project>,
-    recur       : Option<String>,
-    scheduled   : Option<Date>,
-    start       : Option<Date>,
-    tags        : Option<Vec<Tag>>,
-    until       : Option<Date>,
-    wait        : Option<Date>,
+    status: TaskStatus,
+    uuid: Uuid,
+    entry: Date,
+    description: String,
+    annotations: Option<Vec<Annotation>>,
+    depends: Option<String>,
+    due: Option<Date>,
+    end: Option<Date>,
+    imask: Option<i64>,
+    mask: Option<String>,
+    modified: Option<Date>,
+    parent: Option<Uuid>,
+    priority: Option<TaskPriority>,
+    project: Option<Project>,
+    recur: Option<String>,
+    scheduled: Option<Date>,
+    start: Option<Date>,
+    tags: Option<Vec<Tag>>,
+    until: Option<Date>,
+    wait: Option<Date>,
 
-    uda         : UDA,
+    uda: UDA,
 }
 
 /*
@@ -341,94 +343,79 @@ impl Task {
     pub fn uda(&self) -> &UDA {
         &self.uda
     }
-
     /// Get the BTreeMap that contains the UDA mutable
-    pub fn uda(&mut self) -> &mut UDA {
-        &self.uda
+    pub fn uda_mut(&mut self) -> &mut UDA {
+        &mut self.uda
+    }
 }
 
 impl Serialize for Task {
-
-    fn serialize<S>(&self, serializer: &mut S) -> RResult<(), S::Error>
-        where S: Serializer
+    fn serialize<S>(&self, serializer: S) -> RResult<S::Ok, S::Error>
+    where
+        S: Serializer,
     {
-        let mut state = try!(serializer.serialize_struct("Task", 19));
-        try!(serializer.serialize_struct_elt(&mut state, "id", self.id));
-        try!(serializer.serialize_struct_elt(&mut state, "status", &self.status));
-        try!(serializer.serialize_struct_elt(&mut state, "uuid", &self.uuid));
-        try!(serializer.serialize_struct_elt(&mut state, "entry", &self.entry));
-        try!(serializer.serialize_struct_elt(&mut state, "description", &self.description));
-        try!(serializer.serialize_struct_elt(&mut state, "annotations", &self.annotations));
-        try!(serializer.serialize_struct_elt(&mut state, "tags", &self.tags));
+        let mut state = serializer.serialize_struct("Task", 19)?;
+        state.serialize_field("id", &self.id)?;
+        state.serialize_field("status", &self.status)?;
+        state.serialize_field("uuid", &self.uuid)?;
+        state.serialize_field("entry", &self.entry)?;
+        state.serialize_field("description", &self.description)?;
+        state.serialize_field("annotations", &self.annotations)?;
+        state.serialize_field("tags", &self.tags)?;
 
-        match self.recur {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "recur", v)),
-            None => { },
-        }
-        match self.depends {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "depends", v)),
-            None => { },
-        }
-        match self.due {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "due", v)),
-            None => { },
-        }
-        match self.end {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "end", v)),
-            None => { },
-        }
-        match self.imask {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "imask", v)),
-            None => { },
-        }
-        match self.mask {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "mask", v)),
-            None => { },
-        }
-        match self.modified {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "modified", v)),
-            None => { },
-        }
-        match self.parent {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "parent", v)),
-            None => { },
-        }
-        match self.priority {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "priority", v)),
-            None => { },
-        }
-        match self.project {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "project", v)),
-            None => { },
-        }
-        match self.scheduled {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "scheduled", v)),
-            None => { },
-        }
-        match self.start {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "start", v)),
-            None => { },
-        }
-        match self.until {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "until", v)),
-            None => { },
-        }
-        match self.wait {
-            Some(ref v) => try!(serializer.serialize_struct_elt(&mut state, "wait", v)),
-            None => { },
-        }
+        self.recur.as_ref().map(
+            |ref v| state.serialize_field("recur", v),
+        );
+        self.depends.as_ref().map(|ref v| {
+            state.serialize_field("depends", v)
+        });
+        self.due.as_ref().map(
+            |ref v| state.serialize_field("due", v),
+        );
+        self.end.as_ref().map(
+            |ref v| state.serialize_field("end", v),
+        );
+        self.imask.as_ref().map(
+            |ref v| state.serialize_field("imask", v),
+        );
+        self.mask.as_ref().map(
+            |ref v| state.serialize_field("mask", v),
+        );
+        self.modified.as_ref().map(|ref v| {
+            state.serialize_field("modified", v)
+        });
+        self.parent.as_ref().map(|ref v| {
+            state.serialize_field("parent", v)
+        });
+        self.priority.as_ref().map(|ref v| {
+            state.serialize_field("priority", v)
+        });
+        self.project.as_ref().map(|ref v| {
+            state.serialize_field("project", v)
+        });
+        self.scheduled.as_ref().map(|ref v| {
+            state.serialize_field("scheduled", v)
+        });
+        self.start.as_ref().map(
+            |ref v| state.serialize_field("start", v),
+        );
+        self.until.as_ref().map(
+            |ref v| state.serialize_field("until", v),
+        );
+        self.wait.as_ref().map(
+            |ref v| state.serialize_field("wait", v),
+        );
 
-        try!(serializer.serialize_struct_elt(&mut state, "uda", &self.uda));
+        state.serialize_field("uda", &self.uda)?;
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
-
 }
 
-impl Deserialize for Task {
-
-    fn deserialize<D>(deserializer: &mut D) -> RResult<Task, D::Error>
-        where D: Deserializer
+impl<'de> Deserialize<'de> for Task {
+    fn deserialize<D>(deserializer: D) -> RResult<Task, D::Error>
+    where
+        D: Deserializer<'de>,
     {
         static FIELDS: &'static [&'static str] = &[
             "id",
@@ -453,49 +440,53 @@ impl Deserialize for Task {
             "tags",
             "until",
             "wait",
-            "uda"
+            "uda",
         ];
         deserializer.deserialize_struct("Task", FIELDS, TaskDeserializeVisitor)
     }
-
 }
 
 /// Helper type for task deserialization
 struct TaskDeserializeVisitor;
 
-impl Visitor for TaskDeserializeVisitor {
+impl<'de> Visitor<'de> for TaskDeserializeVisitor {
     type Value = Task;
 
-    fn visit_map<V>(&mut self, mut visitor: V) -> RResult<Task, V::Error>
-        where V: DeserializeMapVisitor
-    {
-        let mut id          = None;
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        write!(formatter, "A dictionary containing task properties")
+    }
 
-        let mut status      = None;
-        let mut uuid        = None;
-        let mut entry       = None;
+    fn visit_map<V>(self, mut visitor: V) -> RResult<Task, V::Error>
+    where
+        V: MapAccess<'de>,
+    {
+        let mut id = None;
+
+        let mut status = None;
+        let mut uuid = None;
+        let mut entry = None;
         let mut description = None;
 
         let mut annotations = None;
-        let mut depends     = None;
-        let mut due         = None;
-        let mut end         = None;
-        let mut imask       = None;
-        let mut mask        = None;
-        let mut modified    = None;
-        let mut parent      = None;
-        let mut priority    = None;
-        let mut project     = None;
-        let mut recur       = None;
-        let mut scheduled   = None;
-        let mut start       = None;
-        let mut tags        = None;
-        let mut until       = None;
-        let mut wait        = None;
-        let mut uda         = UDA::default();
+        let mut depends = None;
+        let mut due = None;
+        let mut end = None;
+        let mut imask = None;
+        let mut mask = None;
+        let mut modified = None;
+        let mut parent = None;
+        let mut priority = None;
+        let mut project = None;
+        let mut recur = None;
+        let mut scheduled = None;
+        let mut start = None;
+        let mut tags = None;
+        let mut until = None;
+        let mut wait = None;
+        let mut uda = UDA::default();
 
         loop {
-            let key : Option<String> = try!(visitor.visit_key());
+            let key: Option<String> = visitor.next_key()?;
             if key.is_none() {
                 break;
             }
@@ -503,74 +494,74 @@ impl Visitor for TaskDeserializeVisitor {
 
             match &key[..] {
                 "id" => {
-                    id = Some(try!(visitor.visit_value()));
-                },
+                    id = Some(try!(visitor.next_value()));
+                }
 
                 "status" => {
-                    status = Some(try!(visitor.visit_value()));
-                },
+                    status = Some(visitor.next_value()?);
+                }
                 "uuid" => {
-                    uuid = Some(try!(visitor.visit_value()));
-                },
+                    uuid = Some(try!(visitor.next_value()));
+                }
                 "entry" => {
-                    entry = Some(try!(visitor.visit_value()));
-                },
+                    entry = Some(try!(visitor.next_value()));
+                }
                 "description" => {
-                    description = Some(try!(visitor.visit_value()));
-                },
+                    description = Some(try!(visitor.next_value()));
+                }
 
                 "annotations" => {
-                    annotations = Some(try!(visitor.visit_value()));
-                },
+                    annotations = Some(try!(visitor.next_value()));
+                }
                 "depends" => {
-                    depends = Some(try!(visitor.visit_value()));
-                },
+                    depends = Some(try!(visitor.next_value()));
+                }
                 "due" => {
-                    due = Some(try!(visitor.visit_value()));
-                },
+                    due = Some(try!(visitor.next_value()));
+                }
                 "end" => {
-                    end = Some(try!(visitor.visit_value()));
-                },
+                    end = Some(try!(visitor.next_value()));
+                }
                 "imask" => {
-                    imask = Some(try!(visitor.visit_value()));
-                },
+                    imask = Some(try!(visitor.next_value()));
+                }
                 "mask" => {
-                    mask = Some(try!(visitor.visit_value()));
-                },
+                    mask = Some(try!(visitor.next_value()));
+                }
                 "modified" => {
-                    modified = Some(try!(visitor.visit_value()));
-                },
+                    modified = Some(try!(visitor.next_value()));
+                }
                 "parent" => {
-                    parent = Some(try!(visitor.visit_value()));
-                },
+                    parent = Some(try!(visitor.next_value()));
+                }
                 "priority" => {
-                    priority = Some(try!(visitor.visit_value()));
-                },
+                    priority = Some(try!(visitor.next_value()));
+                }
                 "project" => {
-                    project = Some(try!(visitor.visit_value()));
-                },
+                    project = Some(try!(visitor.next_value()));
+                }
                 "recur" => {
-                    recur = Some(try!(visitor.visit_value()));
-                },
+                    recur = Some(try!(visitor.next_value()));
+                }
                 "scheduled" => {
-                    scheduled = Some(try!(visitor.visit_value()));
-                },
+                    scheduled = Some(try!(visitor.next_value()));
+                }
                 "start" => {
-                    start = Some(try!(visitor.visit_value()));
-                },
+                    start = Some(try!(visitor.next_value()));
+                }
                 "tags" => {
-                    tags = Some(try!(visitor.visit_value()));
-                },
+                    tags = Some(try!(visitor.next_value()));
+                }
                 "until" => {
-                    until = Some(try!(visitor.visit_value()));
-                },
+                    until = Some(try!(visitor.next_value()));
+                }
                 "wait" => {
-                    wait = Some(try!(visitor.visit_value()));
-                },
+                    wait = Some(try!(visitor.next_value()));
+                }
 
                 field => {
-                    debug!("Inserting '{}' as UDA", field);
-                    let uda_value : UDAValue = try!(visitor.visit_value());
+                    eprintln!("Inserting '{}' as UDA", field);
+                    let uda_value: UDAValue = try!(visitor.next_value());
                     uda.insert(UDAName::from(field), uda_value);
                 }
             }
@@ -578,25 +569,23 @@ impl Visitor for TaskDeserializeVisitor {
 
         let status = match status {
             Some(status) => status,
-            None => try!(visitor.missing_field("status")),
+            None => Err(V::Error::missing_field("status"))?,
         };
 
         let uuid = match uuid {
             Some(uuid) => uuid,
-            None => try!(visitor.missing_field("uuid")),
+            None => Err(V::Error::missing_field("uuid"))?,
         };
 
         let entry = match entry {
             Some(entry) => entry,
-            None => try!(visitor.missing_field("entry")),
+            None => Err(V::Error::missing_field("entry"))?,
         };
 
         let description = match description {
             Some(description) => description,
-            None => try!(visitor.missing_field("description")),
+            None => Err(V::Error::missing_field("description"))?,
         };
-
-        try!(visitor.end());
 
         let task = Task::new(
             id,

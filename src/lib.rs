@@ -46,12 +46,16 @@
 
 extern crate chrono;
 extern crate serde;
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde_json;
 extern crate uuid;
 
 #[cfg(test)]
 extern crate env_logger;
+#[cfg(test)]
+#[macro_use]
+extern crate log;
 
 pub mod annotation;
 pub mod date;
