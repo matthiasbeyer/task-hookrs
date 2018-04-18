@@ -29,19 +29,17 @@ pub enum TaskStatus {
 
     /// Recurring status type
     #[serde(rename = "recurring")]
-    Recurring
+    Recurring,
 }
 
 impl Display for TaskStatus {
-
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), FmtError> {
         match self {
-            &TaskStatus::Pending   => write!(fmt, "Pending"),
-            &TaskStatus::Deleted   => write!(fmt, "Deleted"),
+            &TaskStatus::Pending => write!(fmt, "Pending"),
+            &TaskStatus::Deleted => write!(fmt, "Deleted"),
             &TaskStatus::Completed => write!(fmt, "Completed"),
-            &TaskStatus::Waiting   => write!(fmt, "Waiting"),
+            &TaskStatus::Waiting => write!(fmt, "Waiting"),
             &TaskStatus::Recurring => write!(fmt, "Recurring"),
         }
     }
 }
-

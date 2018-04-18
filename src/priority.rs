@@ -21,4 +21,3 @@ pub enum TaskPriority {
     #[serde(rename = "H")]
     High,
 }
-

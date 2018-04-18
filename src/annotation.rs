@@ -14,11 +14,10 @@ use date::Date;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Annotation {
     entry: Date,
-    description: String
+    description: String,
 }
 
 impl Annotation {
-
     /// Create a new Annotation object
     pub fn new(entry: Date, description: String) -> Annotation {
         Annotation {
@@ -46,9 +45,7 @@ impl Annotation {
     pub fn description_mut(&mut self) -> &mut String {
         &mut self.description
     }
-
 }
 
 #[cfg(test)]
-mod test {
-}
+mod test {}
