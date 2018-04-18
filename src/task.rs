@@ -560,7 +560,7 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
                 }
 
                 field => {
-                    eprintln!("Inserting '{}' as UDA", field);
+                    debug!("Inserting '{}' as UDA", field);
                     let uda_value: UDAValue = try!(visitor.next_value());
                     uda.insert(UDAName::from(field), uda_value);
                 }

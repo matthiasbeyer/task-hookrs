@@ -53,7 +53,6 @@ extern crate uuid;
 
 #[cfg(test)]
 extern crate env_logger;
-#[cfg(test)]
 #[macro_use]
 extern crate log;
 
