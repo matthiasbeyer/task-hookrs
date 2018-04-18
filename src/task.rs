@@ -355,14 +355,16 @@ impl Serialize for Task {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("Task", 19)?;
-        state.serialize_field("id", &self.id)?;
         state.serialize_field("status", &self.status)?;
         state.serialize_field("uuid", &self.uuid)?;
         state.serialize_field("entry", &self.entry)?;
         state.serialize_field("description", &self.description)?;
-        state.serialize_field("annotations", &self.annotations)?;
-        state.serialize_field("tags", &self.tags)?;
 
+        self.annotations.as_ref().map(|v| {
+            state.serialize_field("annotations", v)
+        });
+        self.tags.as_ref().map(|v| state.serialize_field("tags", v));
+        self.id.as_ref().map(|v| state.serialize_field("id", v));
         self.recur.as_ref().map(
             |ref v| state.serialize_field("recur", v),
         );
@@ -628,6 +630,7 @@ mod test {
     use uuid::Uuid;
     use chrono::NaiveDateTime;
     use serde_json;
+    use uda::UDAValue;
 
     fn mklogger() {
         use env_logger;
@@ -784,6 +787,62 @@ r#"{
         } else {
             assert!(false, "Annotations missing");
         }
+    }
+    #[test]
+    fn test_uda() {
+        let s = r#"{
+"description":"Some long description for a task",
+"entry":"20160423T125820Z",
+"modified":"20160423T125942Z",
+"project":"project",
+"status":"pending",
+"uuid":"5a04bb1e-3f4b-49fb-b9ba-44407ca223b5",
+"test_str_uda":"test_str_uda_value",
+"test_float_uda":-17.1234,
+"test_int_uda":1234
+}"#;
+
+        println!("{}", s);
+
+        let task = serde_json::from_str(s);
+        println!("{:?}", task);
+        assert!(task.is_ok());
+        let task: Task = task.unwrap();
+
+        let str_uda = task.uda().get(&"test_str_uda".into());
+        assert!(str_uda.is_some());
+        let str_uda = str_uda.unwrap();
+        assert_eq!(str_uda, &UDAValue::Str("test_str_uda_value".to_owned()));
+
+        let float_uda = task.uda().get(&"test_float_uda".into());
+        assert!(float_uda.is_some());
+        let float_uda = float_uda.unwrap();
+        assert_eq!(float_uda, &UDAValue::F64(-17.1234));
+
+        let int_uda = task.uda().get(&"test_int_uda".into());
+        assert!(int_uda.is_some());
+        let int_uda = int_uda.unwrap();
+        assert_eq!(int_uda, &UDAValue::U64(1234));
+
+        let back = serde_json::to_string_pretty(&task);
+        assert!(back.is_ok());
+        let back = back.unwrap();
+        println!("{}", back);
+        assert!(back.contains("description"));
+        assert!(back.contains("Some long description for a task"));
+        assert!(back.contains("entry"));
+        assert!(back.contains("20160423T125820Z"));
+        assert!(back.contains("project"));
+        assert!(back.contains("status"));
+        assert!(back.contains("pending"));
+        assert!(back.contains("uuid"));
+        assert!(back.contains("5a04bb1e-3f4b-49fb-b9ba-44407ca223b5"));
+        assert!(back.contains("test_str_uda"));
+        assert!(back.contains("test_str_uda_value"));
+        assert!(back.contains("test_float_uda"));
+        assert!(back.contains("-17.1234"));
+        assert!(back.contains("test_int_uda"));
+        assert!(back.contains("1234"));
     }
 
 }
