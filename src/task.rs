@@ -14,6 +14,7 @@ use serde::ser::SerializeMap;
 use serde::{Deserialize, Deserializer};
 use serde::de::{Visitor, Error, MapAccess};
 use uuid::Uuid;
+use chrono::Utc;
 
 use priority::TaskPriority;
 use status::TaskStatus;
@@ -35,35 +36,79 @@ use uda::{UDA, UDAName, UDAValue};
 /// all other Data is optional by taskwarrior. This type is a simple rust representation of the
 /// JSON exported by taskwarrior.
 ///
+/// For further explanations of the fields please consult the documentation on https://taskwarrior.org/
+///
 /// It is deserializeable and serializeable via serde_json, so importing and exporting taskwarrior
 /// tasks is simply serializing and deserializing objects of this type.
 #[derive(Debug, Clone, Builder)]
-#[builder(setter_prefix = "with")]
+#[builder(setter(into))]
 pub struct Task {
+    /// The temporary assigned task id
+    #[builder(default)]
     id: Option<u64>,
 
+    /// The status of the task
+    #[builder(default = "TaskStatus::Pending")]
     status: TaskStatus,
+    /// The uuid which identifies the task and is important for syncing
+    #[builder(default = "Uuid::new_v4()")]
     uuid: Uuid,
+    /// The entry date, when this task was created
+    #[builder(default = "Date::from(Utc::now().naive_utc())")]
     entry: Date,
+    /// The description of the task (i.e. its main content)
     description: String,
+    /// A list of annotations with timestamps
+    #[builder(default)]
     annotations: Option<Vec<Annotation>>,
     /// The uuids of other tasks which have to be completed before this one becomes unblocked.
+    #[builder(default)]
     depends: Option<Vec<Uuid>>,
+    /// The due date of the task
+    #[builder(default)]
     due: Option<Date>,
+    /// When the task was last deleted or completed
+    #[builder(default)]
     end: Option<Date>,
+    /// The imask is used internally for recurrence
+    #[builder(default)]
     imask: Option<i64>,
+    /// The mask is used internally for recurrence
+    #[builder(default)]
     mask: Option<String>,
+    /// When the task was last modified
+    #[builder(default)]
     modified: Option<Date>,
+    /// A task can have a parent task
+    #[builder(default)]
     parent: Option<Uuid>,
+    /// The priority of the task
+    #[builder(default)]
     priority: Option<TaskPriority>,
+    /// A task can be part of a project. Typically of the form "project.subproject.subsubproject"
+    #[builder(default)]
     project: Option<Project>,
+    /// The timespan after which this task should recur
+    #[builder(default)]
     recur: Option<String>,
+    /// When the task becomes ready
+    #[builder(default)]
     scheduled: Option<Date>,
+    /// When the task becomes active
+    #[builder(default)]
     start: Option<Date>,
+    /// The tags associated with the task
+    #[builder(default)]
     tags: Option<Vec<Tag>>,
+    /// When the recurrence stops
+    #[builder(default)]
     until: Option<Date>,
+    /// This hides the task until the wait date
+    #[builder(default)]
     wait: Option<Date>,
 
+    /// A map of user defined attributes
+    #[builder(default)]
     uda: UDA,
 }
 
@@ -727,7 +772,6 @@ mod test {
         }
 
         assert!(task.wait() == Some(&mkdate("20160508T164007Z")));
-        // assert!(task.urgency().clone() == 0.583562);
 
         let back = serde_json::to_string(&task).unwrap();
 
@@ -766,7 +810,7 @@ mod test {
                {"entry":"20160423T125926Z","description":"Another Annotation"},
                {"entry":"20160422T125942Z","description":"A Third Anno"}
                ],
-"urgency":10.911
+"urgency": 0.583562
 }"#;
 
         println!("{}", s);
@@ -859,17 +903,74 @@ mod test {
 
     #[test]
     fn test_builder_simple() {
-        use task::builder::TaskBuilder;
+        use task::TaskBuilder;
 
         let t = TaskBuilder::default()
-            .with_status(TaskStatus::Pending)
-            .with_description("test".into_string())
-            .with_entry(mkdate("20150619T165438Z"))
+            .description("test".to_owned())
+            .entry(mkdate("20150619T165438Z"))
             .build();
+        println!("{:?}", t);
+        assert!(t.is_ok());
+        let t = t.unwrap();
 
-        assert_eq!(t.status(), TaskStatus::Pending);
-        assert_eq!(t.description(), "test".into_string());
-        assert_eq!(t.entry(), mkdate("20150619T165438Z"));
+        assert_eq!(t.status(), &TaskStatus::Pending);
+        assert_eq!(t.description(), &"test".to_owned());
+        assert_eq!(t.entry(), &mkdate("20150619T165438Z"));
+    }
+    #[test]
+    fn test_builder_extensive() {
+        use task::TaskBuilder;
+        use uda::{UDA, UDAValue};
+        let mut uda = UDA::new();
+        uda.insert(
+            "test_str_uda".into(),
+            UDAValue::Str("test_str_uda_value".into()),
+        );
+        uda.insert("test_int_uda".into(), UDAValue::U64(1234));
+        uda.insert("test_float_uda".into(), UDAValue::F64(-17.1234));
+        let t = TaskBuilder::default()
+            .description("test")
+            .entry(mkdate("20150619T165438Z"))
+            .id(192)
+            .modified(mkdate("20160423T125942Z"))
+            .project("project".to_owned())
+            .tags(vec!["search".to_owned(), "things".to_owned()])
+            .uda(uda)
+            .build();
+        println!("{:?}", t);
+        assert!(t.is_ok());
+        let t = t.unwrap();
+
+        assert!(t.id().is_some());
+        assert_eq!(t.id().unwrap(), 192);
+        assert_eq!(t.status(), &TaskStatus::Pending);
+        assert_eq!(t.description(), &"test".to_owned());
+        assert_eq!(t.entry(), &mkdate("20150619T165438Z"));
+        assert!(t.modified().is_some());
+        assert_eq!(t.modified().unwrap(), &mkdate("20160423T125942Z"));
+        assert!(t.project().is_some());
+        assert_eq!(t.project().unwrap(), &"project".to_owned());
+        assert!(t.tags().is_some());
+        assert_eq!(
+            t.tags().unwrap(),
+            &vec!["search".to_owned(), "things".to_owned()]
+        );
+    }
+    #[test]
+    fn test_builder_defaults() {
+        use task::TaskBuilder;
+        assert!(
+            TaskBuilder::default()
+                .description("Nice Task")
+                .build()
+                .is_ok()
+        );
+    }
+
+    #[test]
+    fn test_builder_fail() {
+        use task::TaskBuilder;
+        assert!(TaskBuilder::default().build().is_err());
     }
 
 }
