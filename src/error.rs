@@ -36,7 +36,7 @@ fn store_error_type_as_str(e: &TaskErrorKind) -> &'static str {
 
 impl Display for TaskErrorKind {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), FmtError> {
-        try!(write!(fmt, "{}", store_error_type_as_str(self)));
+        write!(fmt, "{}", store_error_type_as_str(self))?;
         Ok(())
     }
 }
@@ -71,11 +71,7 @@ impl TaskError {
 
 impl Display for TaskError {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), FmtError> {
-        try!(write!(
-            fmt,
-            "[{}]",
-            store_error_type_as_str(&self.err_type.clone())
-        ));
+        write!(fmt, "[{}]", store_error_type_as_str(&self.err_type.clone()))?;
         Ok(())
     }
 }

@@ -9,14 +9,10 @@
 use std::result::Result as RResult;
 use std::fmt;
 
-use serde::Serialize;
-use serde::Serializer;
+use serde::{Serialize, Serializer};
 use serde::ser::SerializeMap;
-use serde::Deserialize;
-use serde::Deserializer;
-use serde::de::Visitor;
-use serde::de::Error;
-use serde::de::MapAccess;
+use serde::{Deserialize, Deserializer};
+use serde::de::{Visitor, Error, MapAccess};
 use uuid::Uuid;
 
 use priority::TaskPriority;
@@ -496,74 +492,74 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
 
             match &key[..] {
                 "id" => {
-                    id = Some(try!(visitor.next_value()));
+                    id = Some(visitor.next_value()?);
                 }
 
                 "status" => {
                     status = Some(visitor.next_value()?);
                 }
                 "uuid" => {
-                    uuid = Some(try!(visitor.next_value()));
+                    uuid = Some(visitor.next_value()?);
                 }
                 "entry" => {
-                    entry = Some(try!(visitor.next_value()));
+                    entry = Some(visitor.next_value()?);
                 }
                 "description" => {
-                    description = Some(try!(visitor.next_value()));
+                    description = Some(visitor.next_value()?);
                 }
 
                 "annotations" => {
-                    annotations = Some(try!(visitor.next_value()));
+                    annotations = Some(visitor.next_value()?);
                 }
                 "depends" => {
-                    depends = Some(try!(visitor.next_value()));
+                    depends = Some(visitor.next_value()?);
                 }
                 "due" => {
-                    due = Some(try!(visitor.next_value()));
+                    due = Some(visitor.next_value()?);
                 }
                 "end" => {
-                    end = Some(try!(visitor.next_value()));
+                    end = Some(visitor.next_value()?);
                 }
                 "imask" => {
-                    imask = Some(try!(visitor.next_value()));
+                    imask = Some(visitor.next_value()?);
                 }
                 "mask" => {
-                    mask = Some(try!(visitor.next_value()));
+                    mask = Some(visitor.next_value()?);
                 }
                 "modified" => {
-                    modified = Some(try!(visitor.next_value()));
+                    modified = Some(visitor.next_value()?);
                 }
                 "parent" => {
-                    parent = Some(try!(visitor.next_value()));
+                    parent = Some(visitor.next_value()?);
                 }
                 "priority" => {
-                    priority = Some(try!(visitor.next_value()));
+                    priority = Some(visitor.next_value()?);
                 }
                 "project" => {
-                    project = Some(try!(visitor.next_value()));
+                    project = Some(visitor.next_value()?);
                 }
                 "recur" => {
-                    recur = Some(try!(visitor.next_value()));
+                    recur = Some(visitor.next_value()?);
                 }
                 "scheduled" => {
-                    scheduled = Some(try!(visitor.next_value()));
+                    scheduled = Some(visitor.next_value()?);
                 }
                 "start" => {
-                    start = Some(try!(visitor.next_value()));
+                    start = Some(visitor.next_value()?);
                 }
                 "tags" => {
-                    tags = Some(try!(visitor.next_value()));
+                    tags = Some(visitor.next_value()?);
                 }
                 "until" => {
-                    until = Some(try!(visitor.next_value()));
+                    until = Some(visitor.next_value()?);
                 }
                 "wait" => {
-                    wait = Some(try!(visitor.next_value()));
+                    wait = Some(visitor.next_value()?);
                 }
 
                 field => {
                     debug!("Inserting '{}' as UDA", field);
-                    let uda_value: UDAValue = try!(visitor.next_value());
+                    let uda_value: UDAValue = visitor.next_value()?;
                     uda.insert(UDAName::from(field), uda_value);
                 }
             }
