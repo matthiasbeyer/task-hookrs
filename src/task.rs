@@ -46,7 +46,8 @@ pub struct Task {
     entry: Date,
     description: String,
     annotations: Option<Vec<Annotation>>,
-    depends: Option<String>,
+    /// The uuids of other tasks which have to be completed before this one becomes unblocked.
+    depends: Option<Vec<Uuid>>,
     due: Option<Date>,
     end: Option<Date>,
     imask: Option<i64>,
@@ -80,7 +81,7 @@ impl Task {
         description: String,
 
         annotations: Option<Vec<Annotation>>,
-        depends: Option<String>,
+        depends: Option<Vec<Uuid>>,
         due: Option<Date>,
         end: Option<Date>,
         imask: Option<i64>,
@@ -179,15 +180,13 @@ impl Task {
         self.annotations.as_mut()
     }
 
-    /// Get the depends of the task
-    ///
-    /// This is exported as String by now, which might change in future
-    pub fn depends(&self) -> Option<&String> {
+    /// Get the dependencies of the task
+    pub fn depends(&self) -> Option<&Vec<Uuid>> {
         self.depends.as_ref()
     }
 
-    /// This is exported as String by now, which might change in future mutable
-    pub fn depends_mut(&mut self) -> Option<&mut String> {
+    /// Get the dependencies of the task mutable
+    pub fn depends_mut(&mut self) -> Option<&mut Vec<Uuid>> {
         self.depends.as_mut()
     }
 
@@ -363,7 +362,8 @@ impl Serialize for Task {
             |ref v| state.serialize_entry("recur", v),
         );
         self.depends.as_ref().map(|ref v| {
-            state.serialize_entry("depends", v)
+            let v: Vec<String> = v.iter().map(Uuid::to_string).collect();
+            state.serialize_entry("depends", &v.join(","))
         });
         self.due.as_ref().map(
             |ref v| state.serialize_entry("due", v),
@@ -512,7 +512,12 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
                     annotations = Some(visitor.next_value()?);
                 }
                 "depends" => {
-                    depends = Some(visitor.next_value()?);
+                    let raw: String = visitor.next_value()?;
+                    let mut uuids = vec![];
+                    for uuid in raw.split(",") {
+                        uuids.push(Uuid::parse_str(uuid).map_err(V::Error::custom)?);
+                    }
+                    depends = Some(uuids);
                 }
                 "due" => {
                     due = Some(visitor.next_value()?);
@@ -687,6 +692,7 @@ mod test {
 "status": "waiting",
 "tags": ["some", "tags", "are", "here"],
 "uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0",
+"depends": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0,5a04bb1e-3f4b-49fb-b9ba-44407ca223b5",
 "wait": "20160508T164007Z",
 "urgency": 0.583562
 }"#;
@@ -739,6 +745,9 @@ mod test {
         assert!(back.contains("here"));
         assert!(back.contains("uuid"));
         assert!(back.contains("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"));
+        assert!(back.contains(
+            "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0,5a04bb1e-3f4b-49fb-b9ba-44407ca223b5",
+        ));
     }
 
     #[test]
