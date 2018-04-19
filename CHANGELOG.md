@@ -4,6 +4,9 @@ This changelog was started with the 0.4.0 release.
 
 ## Next
 
+* Added support for user defined attributes (short UDA) via the task-hookrs::uda module.
+  (This reintroduced the dependency to the "log" crate.)
+
 ## 0.5.0
 
 * The "uuid" dependency was updated from 0.5 to 0.6
