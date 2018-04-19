@@ -906,7 +906,7 @@ mod test {
         use task::TaskBuilder;
 
         let t = TaskBuilder::default()
-            .description("test".to_owned())
+            .description("test")
             .entry(mkdate("20150619T165438Z"))
             .build();
         println!("{:?}", t);
@@ -914,7 +914,7 @@ mod test {
         let t = t.unwrap();
 
         assert_eq!(t.status(), &TaskStatus::Pending);
-        assert_eq!(t.description(), &"test".to_owned());
+        assert_eq!(t.description(), "test");
         assert_eq!(t.entry(), &mkdate("20150619T165438Z"));
     }
     #[test]
@@ -944,12 +944,12 @@ mod test {
         assert!(t.id().is_some());
         assert_eq!(t.id().unwrap(), 192);
         assert_eq!(t.status(), &TaskStatus::Pending);
-        assert_eq!(t.description(), &"test".to_owned());
+        assert_eq!(t.description(), "test");
         assert_eq!(t.entry(), &mkdate("20150619T165438Z"));
         assert!(t.modified().is_some());
         assert_eq!(t.modified().unwrap(), &mkdate("20160423T125942Z"));
         assert!(t.project().is_some());
-        assert_eq!(t.project().unwrap(), &"project".to_owned());
+        assert_eq!(t.project().unwrap(), "project");
         assert!(t.tags().is_some());
         assert_eq!(
             t.tags().unwrap(),
