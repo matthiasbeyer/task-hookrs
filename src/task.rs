@@ -6,6 +6,17 @@
 
 //! Module containing `Task` type as well as trait implementations
 
+use std::result::Result as RResult;
+use std::fmt;
+
+use serde::Serialize;
+use serde::Serializer;
+use serde::ser::SerializeMap;
+use serde::Deserialize;
+use serde::Deserializer;
+use serde::de::Visitor;
+use serde::de::Error;
+use serde::de::MapAccess;
 use uuid::Uuid;
 
 use priority::TaskPriority;
@@ -14,6 +25,7 @@ use project::Project;
 use tag::Tag;
 use date::Date;
 use annotation::Annotation;
+use uda::{UDA, UDAName, UDAValue};
 
 /// Task type
 ///
@@ -29,60 +41,32 @@ use annotation::Annotation;
 ///
 /// It is deserializeable and serializeable via serde_json, so importing and exporting taskwarrior
 /// tasks is simply serializing and deserializing objects of this type.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Task {
-    status      : TaskStatus,
-    uuid        : Uuid,
-    entry       : Date,
-    description : String,
+    id: Option<u64>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    annotations : Option<Vec<Annotation>>,
+    status: TaskStatus,
+    uuid: Uuid,
+    entry: Date,
+    description: String,
+    annotations: Option<Vec<Annotation>>,
+    depends: Option<String>,
+    due: Option<Date>,
+    end: Option<Date>,
+    imask: Option<i64>,
+    mask: Option<String>,
+    modified: Option<Date>,
+    parent: Option<Uuid>,
+    priority: Option<TaskPriority>,
+    project: Option<Project>,
+    recur: Option<String>,
+    scheduled: Option<Date>,
+    start: Option<Date>,
+    tags: Option<Vec<Tag>>,
+    until: Option<Date>,
+    wait: Option<Date>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    depends     : Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    due         : Option<Date>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    end         : Option<Date>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    imask       : Option<i64>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    mask        : Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    modified    : Option<Date>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    parent      : Option<Uuid>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    priority    : Option<TaskPriority>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    project     : Option<Project>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    recur       : Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    scheduled   : Option<Date>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    start       : Option<Date>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    tags        : Option<Vec<Tag>>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    until       : Option<Date>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    wait        : Option<Date>,
+    uda: UDA,
 }
 
 /*
@@ -93,6 +77,8 @@ impl Task {
 
     /// Create a new Task instance
     pub fn new(
+        id          : Option<u64>,
+
         status      : TaskStatus,
         uuid        : Uuid,
         entry       : Date,
@@ -114,9 +100,11 @@ impl Task {
         tags        : Option<Vec<Tag>>,
         until       : Option<Date>,
         wait        : Option<Date>,
+        uda         : UDA,
     ) -> Task
     {
         Task {
+            id          : id,
             status      : status,
             uuid        : uuid,
             entry       : entry,
@@ -138,7 +126,13 @@ impl Task {
             tags        : tags,
             until       : until,
             wait        : wait,
+            uda         : uda,
         }
+    }
+
+    /// Get the id of the task
+    pub fn id(&self) -> Option<u64> {
+        self.id
     }
 
     /// Get the status of the task
@@ -345,7 +339,286 @@ impl Task {
     pub fn wait_mut(&mut self) -> Option<&mut Date> {
         self.wait.as_mut()
     }
+    /// Get the BTreeMap that contains the UDA
+    pub fn uda(&self) -> &UDA {
+        &self.uda
+    }
+    /// Get the BTreeMap that contains the UDA mutable
+    pub fn uda_mut(&mut self) -> &mut UDA {
+        &mut self.uda
+    }
+}
 
+impl Serialize for Task {
+    fn serialize<S>(&self, serializer: S) -> RResult<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_map(None)?;
+        state.serialize_entry("status", &self.status)?;
+        state.serialize_entry("uuid", &self.uuid)?;
+        state.serialize_entry("entry", &self.entry)?;
+        state.serialize_entry("description", &self.description)?;
+
+        self.annotations.as_ref().map(|v| {
+            state.serialize_entry("annotations", v)
+        });
+        self.tags.as_ref().map(|v| state.serialize_entry("tags", v));
+        self.id.as_ref().map(|v| state.serialize_entry("id", v));
+        self.recur.as_ref().map(
+            |ref v| state.serialize_entry("recur", v),
+        );
+        self.depends.as_ref().map(|ref v| {
+            state.serialize_entry("depends", v)
+        });
+        self.due.as_ref().map(
+            |ref v| state.serialize_entry("due", v),
+        );
+        self.end.as_ref().map(
+            |ref v| state.serialize_entry("end", v),
+        );
+        self.imask.as_ref().map(
+            |ref v| state.serialize_entry("imask", v),
+        );
+        self.mask.as_ref().map(
+            |ref v| state.serialize_entry("mask", v),
+        );
+        self.modified.as_ref().map(|ref v| {
+            state.serialize_entry("modified", v)
+        });
+        self.parent.as_ref().map(|ref v| {
+            state.serialize_entry("parent", v)
+        });
+        self.priority.as_ref().map(|ref v| {
+            state.serialize_entry("priority", v)
+        });
+        self.project.as_ref().map(|ref v| {
+            state.serialize_entry("project", v)
+        });
+        self.scheduled.as_ref().map(|ref v| {
+            state.serialize_entry("scheduled", v)
+        });
+        self.start.as_ref().map(
+            |ref v| state.serialize_entry("start", v),
+        );
+        self.until.as_ref().map(
+            |ref v| state.serialize_entry("until", v),
+        );
+        self.wait.as_ref().map(
+            |ref v| state.serialize_entry("wait", v),
+        );
+
+        for (key, value) in self.uda().iter() {
+            state.serialize_entry(key, value)?;
+        }
+
+        state.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for Task {
+    fn deserialize<D>(deserializer: D) -> RResult<Task, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        static FIELDS: &'static [&'static str] = &[
+            "id",
+            "status",
+            "uuid",
+            "entry",
+            "description",
+
+            "annotations",
+            "depends",
+            "due",
+            "end",
+            "imask",
+            "mask",
+            "modified",
+            "parent",
+            "priority",
+            "project",
+            "recur",
+            "scheduled",
+            "start",
+            "tags",
+            "until",
+            "wait",
+            "uda",
+        ];
+        deserializer.deserialize_struct("Task", FIELDS, TaskDeserializeVisitor)
+    }
+}
+
+/// Helper type for task deserialization
+struct TaskDeserializeVisitor;
+
+impl<'de> Visitor<'de> for TaskDeserializeVisitor {
+    type Value = Task;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        write!(formatter, "A dictionary containing task properties")
+    }
+
+    fn visit_map<V>(self, mut visitor: V) -> RResult<Task, V::Error>
+    where
+        V: MapAccess<'de>,
+    {
+        let mut id = None;
+
+        let mut status = None;
+        let mut uuid = None;
+        let mut entry = None;
+        let mut description = None;
+
+        let mut annotations = None;
+        let mut depends = None;
+        let mut due = None;
+        let mut end = None;
+        let mut imask = None;
+        let mut mask = None;
+        let mut modified = None;
+        let mut parent = None;
+        let mut priority = None;
+        let mut project = None;
+        let mut recur = None;
+        let mut scheduled = None;
+        let mut start = None;
+        let mut tags = None;
+        let mut until = None;
+        let mut wait = None;
+        let mut uda = UDA::default();
+
+        loop {
+            let key: Option<String> = visitor.next_key()?;
+            if key.is_none() {
+                break;
+            }
+            let key = key.unwrap();
+
+            match &key[..] {
+                "id" => {
+                    id = Some(try!(visitor.next_value()));
+                }
+
+                "status" => {
+                    status = Some(visitor.next_value()?);
+                }
+                "uuid" => {
+                    uuid = Some(try!(visitor.next_value()));
+                }
+                "entry" => {
+                    entry = Some(try!(visitor.next_value()));
+                }
+                "description" => {
+                    description = Some(try!(visitor.next_value()));
+                }
+
+                "annotations" => {
+                    annotations = Some(try!(visitor.next_value()));
+                }
+                "depends" => {
+                    depends = Some(try!(visitor.next_value()));
+                }
+                "due" => {
+                    due = Some(try!(visitor.next_value()));
+                }
+                "end" => {
+                    end = Some(try!(visitor.next_value()));
+                }
+                "imask" => {
+                    imask = Some(try!(visitor.next_value()));
+                }
+                "mask" => {
+                    mask = Some(try!(visitor.next_value()));
+                }
+                "modified" => {
+                    modified = Some(try!(visitor.next_value()));
+                }
+                "parent" => {
+                    parent = Some(try!(visitor.next_value()));
+                }
+                "priority" => {
+                    priority = Some(try!(visitor.next_value()));
+                }
+                "project" => {
+                    project = Some(try!(visitor.next_value()));
+                }
+                "recur" => {
+                    recur = Some(try!(visitor.next_value()));
+                }
+                "scheduled" => {
+                    scheduled = Some(try!(visitor.next_value()));
+                }
+                "start" => {
+                    start = Some(try!(visitor.next_value()));
+                }
+                "tags" => {
+                    tags = Some(try!(visitor.next_value()));
+                }
+                "until" => {
+                    until = Some(try!(visitor.next_value()));
+                }
+                "wait" => {
+                    wait = Some(try!(visitor.next_value()));
+                }
+
+                field => {
+                    debug!("Inserting '{}' as UDA", field);
+                    let uda_value: UDAValue = try!(visitor.next_value());
+                    uda.insert(UDAName::from(field), uda_value);
+                }
+            }
+        }
+
+        let status = match status {
+            Some(status) => status,
+            None => Err(V::Error::missing_field("status"))?,
+        };
+
+        let uuid = match uuid {
+            Some(uuid) => uuid,
+            None => Err(V::Error::missing_field("uuid"))?,
+        };
+
+        let entry = match entry {
+            Some(entry) => entry,
+            None => Err(V::Error::missing_field("entry"))?,
+        };
+
+        let description = match description {
+            Some(description) => description,
+            None => Err(V::Error::missing_field("description"))?,
+        };
+
+        let task = Task::new(
+            id,
+            status,
+            uuid,
+            entry,
+            description,
+
+            annotations,
+            depends,
+            due,
+            end,
+            imask,
+            mask,
+            modified,
+            parent,
+            priority,
+            project,
+            recur,
+            scheduled,
+            start,
+            tags,
+            until,
+            wait,
+            uda
+        );
+
+        Ok(task)
+    }
 }
 
 #[cfg(test)]
@@ -359,6 +632,13 @@ mod test {
     use uuid::Uuid;
     use chrono::NaiveDateTime;
     use serde_json;
+    use uda::UDAValue;
+
+    fn mklogger() {
+        use env_logger;
+        let _ = env_logger::init();
+        debug!("Env-logger enabled");
+    }
 
     fn mkdate(s: &str) -> Date {
         let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);
@@ -402,6 +682,7 @@ r#"{
 
     #[test]
     fn test_deser_more() {
+        mklogger();
         let s =
 r#"{
 "id": 1,
@@ -508,6 +789,62 @@ r#"{
         } else {
             assert!(false, "Annotations missing");
         }
+    }
+    #[test]
+    fn test_uda() {
+        let s = r#"{
+"description":"Some long description for a task",
+"entry":"20160423T125820Z",
+"modified":"20160423T125942Z",
+"project":"project",
+"status":"pending",
+"uuid":"5a04bb1e-3f4b-49fb-b9ba-44407ca223b5",
+"test_str_uda":"test_str_uda_value",
+"test_float_uda":-17.1234,
+"test_int_uda":1234
+}"#;
+
+        println!("{}", s);
+
+        let task = serde_json::from_str(s);
+        println!("{:?}", task);
+        assert!(task.is_ok());
+        let task: Task = task.unwrap();
+
+        let str_uda = task.uda().get(&"test_str_uda".into());
+        assert!(str_uda.is_some());
+        let str_uda = str_uda.unwrap();
+        assert_eq!(str_uda, &UDAValue::Str("test_str_uda_value".to_owned()));
+
+        let float_uda = task.uda().get(&"test_float_uda".into());
+        assert!(float_uda.is_some());
+        let float_uda = float_uda.unwrap();
+        assert_eq!(float_uda, &UDAValue::F64(-17.1234));
+
+        let int_uda = task.uda().get(&"test_int_uda".into());
+        assert!(int_uda.is_some());
+        let int_uda = int_uda.unwrap();
+        assert_eq!(int_uda, &UDAValue::U64(1234));
+
+        let back = serde_json::to_string_pretty(&task);
+        assert!(back.is_ok());
+        let back = back.unwrap();
+        println!("{}", back);
+        assert!(back.contains("description"));
+        assert!(back.contains("Some long description for a task"));
+        assert!(back.contains("entry"));
+        assert!(back.contains("20160423T125820Z"));
+        assert!(back.contains("project"));
+        assert!(back.contains("status"));
+        assert!(back.contains("pending"));
+        assert!(back.contains("uuid"));
+        assert!(back.contains("5a04bb1e-3f4b-49fb-b9ba-44407ca223b5"));
+        assert!(back.contains("test_str_uda"));
+        assert!(back.contains("test_str_uda_value"));
+        assert!(back.contains("test_float_uda"));
+        assert!(back.contains("-17.1234"));
+        assert!(back.contains("test_int_uda"));
+        assert!(back.contains("1234"));
     }
 
 }

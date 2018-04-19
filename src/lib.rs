@@ -46,9 +46,15 @@
 
 extern crate chrono;
 extern crate serde;
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde_json;
 extern crate uuid;
+
+#[cfg(test)]
+extern crate env_logger;
+#[macro_use]
+extern crate log;
 
 pub mod annotation;
 pub mod date;
@@ -60,4 +66,5 @@ pub mod result;
 pub mod status;
 pub mod tag;
 pub mod task;
+pub mod uda;
 
