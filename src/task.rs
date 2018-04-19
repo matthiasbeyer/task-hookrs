@@ -74,59 +74,57 @@ pub struct Task {
  * to us. I guess this should be fixed.
  */
 impl Task {
-
     /// Create a new Task instance
     pub fn new(
-        id          : Option<u64>,
+        id: Option<u64>,
 
-        status      : TaskStatus,
-        uuid        : Uuid,
-        entry       : Date,
-        description : String,
+        status: TaskStatus,
+        uuid: Uuid,
+        entry: Date,
+        description: String,
 
-        annotations : Option<Vec<Annotation>>,
-        depends     : Option<String>,
-        due         : Option<Date>,
-        end         : Option<Date>,
-        imask       : Option<i64>,
-        mask        : Option<String>,
-        modified    : Option<Date>,
-        parent      : Option<Uuid>,
-        priority    : Option<TaskPriority>,
-        project     : Option<Project>,
-        recur       : Option<String>,
-        scheduled   : Option<Date>,
-        start       : Option<Date>,
-        tags        : Option<Vec<Tag>>,
-        until       : Option<Date>,
-        wait        : Option<Date>,
-        uda         : UDA,
-    ) -> Task
-    {
+        annotations: Option<Vec<Annotation>>,
+        depends: Option<String>,
+        due: Option<Date>,
+        end: Option<Date>,
+        imask: Option<i64>,
+        mask: Option<String>,
+        modified: Option<Date>,
+        parent: Option<Uuid>,
+        priority: Option<TaskPriority>,
+        project: Option<Project>,
+        recur: Option<String>,
+        scheduled: Option<Date>,
+        start: Option<Date>,
+        tags: Option<Vec<Tag>>,
+        until: Option<Date>,
+        wait: Option<Date>,
+        uda: UDA,
+    ) -> Task {
         Task {
-            id          : id,
-            status      : status,
-            uuid        : uuid,
-            entry       : entry,
-            description : description,
+            id: id,
+            status: status,
+            uuid: uuid,
+            entry: entry,
+            description: description,
 
-            annotations : annotations,
-            depends     : depends,
-            due         : due,
-            end         : end,
-            imask       : imask,
-            mask        : mask,
-            modified    : modified,
-            parent      : parent,
-            priority    : priority,
-            project     : project,
-            recur       : recur,
-            scheduled   : scheduled,
-            start       : start,
-            tags        : tags,
-            until       : until,
-            wait        : wait,
-            uda         : uda,
+            annotations: annotations,
+            depends: depends,
+            due: due,
+            end: end,
+            imask: imask,
+            mask: mask,
+            modified: modified,
+            parent: parent,
+            priority: priority,
+            project: project,
+            recur: recur,
+            scheduled: scheduled,
+            start: start,
+            tags: tags,
+            until: until,
+            wait: wait,
+            uda: uda,
         }
     }
 
@@ -614,7 +612,7 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
             tags,
             until,
             wait,
-            uda
+            uda,
         );
 
         Ok(task)
@@ -628,11 +626,11 @@ mod test {
     use status::TaskStatus;
     use task::Task;
     use annotation::Annotation;
+    use uda::UDAValue;
 
     use uuid::Uuid;
     use chrono::NaiveDateTime;
     use serde_json;
-    use uda::UDAValue;
 
     fn mklogger() {
         use env_logger;
@@ -647,8 +645,7 @@ mod test {
 
     #[test]
     fn test_deser() {
-        let s =
-r#"{
+        let s = r#"{
 "id": 1,
 "description": "test",
 "entry": "20150619T165438Z",
@@ -661,12 +658,14 @@ r#"{
         let task = serde_json::from_str(s);
         println!("{:?}", task);
         assert!(task.is_ok());
-        let task : Task = task.unwrap();
+        let task: Task = task.unwrap();
 
         assert!(task.status().clone() == TaskStatus::Waiting);
         assert!(task.description() == "test");
         assert!(task.entry().clone() == mkdate("20150619T165438Z"));
-        assert!(task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap());
+        assert!(
+            task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
+        );
 
         let back = serde_json::to_string(&task).unwrap();
 
@@ -683,8 +682,7 @@ r#"{
     #[test]
     fn test_deser_more() {
         mklogger();
-        let s =
-r#"{
+        let s = r#"{
 "id": 1,
 "description": "some description",
 "entry": "20150619T165438Z",
@@ -702,24 +700,27 @@ r#"{
         let task = serde_json::from_str(s);
         println!("{:?}", task);
         assert!(task.is_ok());
-        let task : Task = task.unwrap();
+        let task: Task = task.unwrap();
 
         assert!(task.status().clone() == TaskStatus::Waiting);
         assert!(task.description() == "some description");
         assert!(task.entry().clone() == mkdate("20150619T165438Z"));
-        assert!(task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap());
+        assert!(
+            task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
+        );
 
         assert!(task.modified() == Some(&mkdate("20160327T164007Z")));
         assert!(task.project() == Some(&String::from("someproject")));
 
         if let Some(tags) = task.tags() {
             for tag in tags {
-                let any_tag = [ "some", "tags", "are", "here", ]
-                    .into_iter().any(|t| tag == *t);
+                let any_tag = ["some", "tags", "are", "here"].into_iter().any(
+                    |t| tag == *t,
+                );
                 assert!(any_tag, "Tag {} missing", tag);
             }
         } else {
-                assert!(false, "Tags completely missing");
+            assert!(false, "Tags completely missing");
         }
 
         assert!(task.wait() == Some(&mkdate("20160508T164007Z")));
@@ -746,8 +747,7 @@ r#"{
 
     #[test]
     fn test_deser_annotation() {
-        let s =
-r#"{
+        let s = r#"{
 "id":192,
 "description":"Some long description for a task",
 "entry":"20160423T125820Z",
@@ -768,13 +768,17 @@ r#"{
         let task = serde_json::from_str(s);
         println!("{:?}", task);
         assert!(task.is_ok());
-        let task : Task = task.unwrap();
+        let task: Task = task.unwrap();
 
-        let all_annotations = vec![
-            Annotation::new(mkdate("20160423T125911Z"), String::from("An Annotation")),
-            Annotation::new(mkdate("20160423T125926Z"), String::from("Another Annotation")),
-            Annotation::new(mkdate("20160422T125942Z"), String::from("A Third Anno"))
-        ];
+        let all_annotations =
+            vec![
+                Annotation::new(mkdate("20160423T125911Z"), String::from("An Annotation")),
+                Annotation::new(
+                    mkdate("20160423T125926Z"),
+                    String::from("Another Annotation")
+                ),
+                Annotation::new(mkdate("20160422T125942Z"), String::from("A Third Anno")),
+            ];
 
         if let Some(annotations) = task.annotations() {
             for annotation in annotations {
@@ -848,4 +852,3 @@ r#"{
     }
 
 }
-

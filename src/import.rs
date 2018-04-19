@@ -18,26 +18,27 @@ use error::{TaskError, TaskErrorKind};
 /// Import taskwarrior-exported JSON. This expects an JSON Array of objects, as exported by
 /// taskwarrior.
 pub fn import<R: Read>(r: R) -> Result<Vec<Task>> {
-    serde_json::from_reader(r)
-        .map_err(|e| {
-            TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e)))
-        })
+    serde_json::from_reader(r).map_err(|e| {
+        TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e)))
+    })
 }
 
 /// Import a single JSON-formatted Task
-pub fn import_task(s : &str) -> Result<Task> {
-    serde_json::from_str(s)
-        .map_err(|e| {
-            TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e)))
-        })
+pub fn import_task(s: &str) -> Result<Task> {
+    serde_json::from_str(s).map_err(|e| {
+        TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e)))
+    })
 }
 
 /// Reads line by line and tries to parse a task-object per line.
-pub fn import_tasks<BR: BufRead>(r : BR) -> Vec<Result<Task>> {
+pub fn import_tasks<BR: BufRead>(r: BR) -> Vec<Result<Task>> {
     let mut vt = Vec::new();
     for line in r.lines() {
         if line.is_err() {
-            vt.push(Err(TaskError::new(TaskErrorKind::ReaderError, Some(Box::new(line.unwrap_err())))));
+            vt.push(Err(TaskError::new(
+                TaskErrorKind::ReaderError,
+                Some(Box::new(line.unwrap_err())),
+            )));
             continue;
         }
         // Unwrap is safe because of continue above
@@ -162,13 +163,16 @@ fn test_one_single() {
     assert!(task.status() == &TaskStatus::Waiting);
     assert!(task.description() == "some description");
     assert!(task.entry().clone() == mkdate("20150619T165438Z"));
-    assert!(task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap());
+    assert!(
+        task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
+    );
     assert!(task.modified() == Some(&mkdate("20160327T164007Z")));
     assert!(task.project() == Some(&String::from("someproject")));
     if let Some(tags) = task.tags() {
         for tag in tags {
-            let any_tag = [ "some", "tags", "are", "here", ]
-                .into_iter().any(|t| tag == *t);
+            let any_tag = ["some", "tags", "are", "here"].into_iter().any(
+                |t| tag == *t,
+            );
             assert!(any_tag, "Tag {} missing", tag);
         }
     } else {
@@ -194,4 +198,3 @@ fn test_two_single() {
     assert!(import0.status() == &TaskStatus::Waiting);
     assert!(import1.status() == &TaskStatus::Waiting);
 }
-

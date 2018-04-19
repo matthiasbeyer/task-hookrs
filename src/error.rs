@@ -29,18 +29,16 @@ pub enum TaskErrorKind {
 fn store_error_type_as_str(e: &TaskErrorKind) -> &'static str {
     match e {
         &TaskErrorKind::ParserError => "Parser Error",
-        &TaskErrorKind::NoStatus    => "Task status is missing",
+        &TaskErrorKind::NoStatus => "Task status is missing",
         &TaskErrorKind::ReaderError => "Reader Error",
     }
 }
 
 impl Display for TaskErrorKind {
-
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), FmtError> {
         try!(write!(fmt, "{}", store_error_type_as_str(self)));
         Ok(())
     }
-
 }
 
 ///
@@ -53,18 +51,15 @@ pub struct TaskError {
 }
 
 impl TaskError {
-
     ///
     /// Build a new TaskError from an TaskErrorKind, optionally with cause
     ///
-    pub fn new(errtype: TaskErrorKind, cause: Option<Box<Error>>)
-        -> TaskError
-        {
-            TaskError {
-                err_type: errtype,
-                cause: cause,
-            }
+    pub fn new(errtype: TaskErrorKind, cause: Option<Box<Error>>) -> TaskError {
+        TaskError {
+            err_type: errtype,
+            cause: cause,
         }
+    }
 
     ///
     /// Get the error type of this TaskError
@@ -72,20 +67,20 @@ impl TaskError {
     pub fn err_type(&self) -> TaskErrorKind {
         self.err_type.clone()
     }
-
 }
 
 impl Display for TaskError {
-
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), FmtError> {
-        try!(write!(fmt, "[{}]", store_error_type_as_str(&self.err_type.clone())));
+        try!(write!(
+            fmt,
+            "[{}]",
+            store_error_type_as_str(&self.err_type.clone())
+        ));
         Ok(())
     }
-
 }
 
 impl Error for TaskError {
-
     fn description(&self) -> &str {
         store_error_type_as_str(&self.err_type.clone())
     }
@@ -93,6 +88,4 @@ impl Error for TaskError {
     fn cause(&self) -> Option<&Error> {
         self.cause.as_ref().map(|e| &**e)
     }
-
 }
-
