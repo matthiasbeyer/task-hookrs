@@ -815,17 +815,17 @@ mod test {
         assert!(task.is_ok());
         let task: Task = task.unwrap();
 
-        let str_uda = task.uda().get(&"test_str_uda".into());
+        let str_uda = task.uda().get(&"test_str_uda".to_owned());
         assert!(str_uda.is_some());
         let str_uda = str_uda.unwrap();
         assert_eq!(str_uda, &UDAValue::Str("test_str_uda_value".to_owned()));
 
-        let float_uda = task.uda().get(&"test_float_uda".into());
+        let float_uda = task.uda().get(&"test_float_uda".to_owned());
         assert!(float_uda.is_some());
         let float_uda = float_uda.unwrap();
         assert_eq!(float_uda, &UDAValue::F64(-17.1234));
 
-        let int_uda = task.uda().get(&"test_int_uda".into());
+        let int_uda = task.uda().get(&"test_int_uda".to_owned());
         assert!(int_uda.is_some());
         let int_uda = int_uda.unwrap();
         assert_eq!(int_uda, &UDAValue::U64(1234));
