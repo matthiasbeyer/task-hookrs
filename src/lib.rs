@@ -50,6 +50,7 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate uuid;
+#[macro_use] extern crate derive_builder;
 
 #[cfg(test)]
 extern crate env_logger;

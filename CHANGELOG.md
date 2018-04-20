@@ -4,6 +4,7 @@ This changelog was started with the 0.4.0 release.
 
 ## Next
 
+* Added TaskBuilder
 * Added support for user defined attributes (short UDA) via the task-hookrs::uda module.
   (This reintroduced the dependency to the "log" crate.)
 
