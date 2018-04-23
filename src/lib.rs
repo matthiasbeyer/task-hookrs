@@ -50,7 +50,10 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate uuid;
-#[macro_use] extern crate derive_builder;
+#[macro_use]
+extern crate derive_builder;
+#[macro_use]
+extern crate error_chain;
 
 #[cfg(test)]
 extern crate env_logger;
@@ -63,7 +66,6 @@ pub mod error;
 pub mod import;
 pub mod priority;
 pub mod project;
-pub mod result;
 pub mod status;
 pub mod tag;
 pub mod task;

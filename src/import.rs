@@ -11,23 +11,19 @@ use std::io::Read;
 
 use serde_json;
 
-use result::Result;
 use task::Task;
-use error::{TaskError, TaskErrorKind};
+use error::{Result, ResultExt};
+use error::ErrorKind as EK;
 
 /// Import taskwarrior-exported JSON. This expects an JSON Array of objects, as exported by
 /// taskwarrior.
 pub fn import<R: Read>(r: R) -> Result<Vec<Task>> {
-    serde_json::from_reader(r).map_err(|e| {
-        TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e)))
-    })
+    serde_json::from_reader(r).chain_err(|| EK::ParserError)
 }
 
 /// Import a single JSON-formatted Task
 pub fn import_task(s: &str) -> Result<Task> {
-    serde_json::from_str(s).map_err(|e| {
-        TaskError::new(TaskErrorKind::ParserError, Some(Box::new(e)))
-    })
+    serde_json::from_str(s).chain_err(|| EK::ParserError)
 }
 
 /// Reads line by line and tries to parse a task-object per line.
@@ -35,10 +31,7 @@ pub fn import_tasks<BR: BufRead>(r: BR) -> Vec<Result<Task>> {
     let mut vt = Vec::new();
     for line in r.lines() {
         if line.is_err() {
-            vt.push(Err(TaskError::new(
-                TaskErrorKind::ReaderError,
-                Some(Box::new(line.unwrap_err())),
-            )));
+            vt.push(Err(line.unwrap_err()).chain_err(|| EK::ReaderError));
             continue;
         }
         // Unwrap is safe because of continue above
