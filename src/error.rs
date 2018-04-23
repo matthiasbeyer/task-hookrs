@@ -9,10 +9,6 @@ error_chain!{
     errors {
         /// Error kind indicating that the JSON parser failed
         ParserError {}
-        /// Error kind indicating that the Status of a task is missing
-        NoStatus {
-            description("Task status is missing")
-        }
         /// Error kind indicating that the Reader failed to read something
         ReaderError {}
     }
