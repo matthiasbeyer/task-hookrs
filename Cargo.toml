@@ -3,6 +3,7 @@ name = "task-hookrs"
 version = "0.5.0"
 authors = ["Matthias Beyer <mail@beyermatthias.de>",
            "Mario Krehl <mario-krehl@gmx.de>",
+           "Malte Brandy <malte.brandy@maralorn.de>",
           ]
 
 description = "Crate to work with taskwarrior exported JSON"
