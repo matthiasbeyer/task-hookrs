@@ -11,5 +11,9 @@ error_chain!{
         ParserError {}
         /// Error kind indicating that the Reader failed to read something
         ReaderError {}
+        /// Error kind indicating that a call to the task warrior binary failed
+        TaskCmdError {}
+        /// Error kind indicating that a conversion to JSON failed
+        SerializeError {}
     }
 }
