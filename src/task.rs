@@ -226,6 +226,15 @@ impl Task {
         self.annotations.as_mut()
     }
 
+    /// Set annotations
+    pub fn set_annotations<T, A>(&mut self, new: Option<T>)
+    where
+        T: IntoIterator,
+        T::Item: Into<Annotation>,
+    {
+        self.annotations = new.map(|x| x.into_iter().map(Into::into).collect());
+    }
+
     /// Get the dependencies of the task
     pub fn depends(&self) -> Option<&Vec<Uuid>> {
         self.depends.as_ref()
@@ -234,6 +243,15 @@ impl Task {
     /// Get the dependencies of the task mutable
     pub fn depends_mut(&mut self) -> Option<&mut Vec<Uuid>> {
         self.depends.as_mut()
+    }
+
+    /// Set depends
+    pub fn set_depends<T, U>(&mut self, new: Option<T>)
+    where
+        T: IntoIterator,
+        T::Item: Into<Uuid>,
+    {
+        self.depends = new.map(|x| x.into_iter().map(Into::into).collect());
     }
 
     /// Get the due date of the task
@@ -246,6 +264,14 @@ impl Task {
         self.due.as_mut()
     }
 
+    /// Set due
+    pub fn set_due<T>(&mut self, new: Option<T>)
+    where
+        T: Into<Date>,
+    {
+        self.due = new.map(Into::into)
+    }
+
     /// Get the end date of the task
     pub fn end(&self) -> Option<&Date> {
         self.end.as_ref()
@@ -254,6 +280,14 @@ impl Task {
     /// Get the end date of the task mutable
     pub fn end_mut(&mut self) -> Option<&mut Date> {
         self.end.as_mut()
+    }
+
+    /// Set end
+    pub fn set_end<T>(&mut self, new: Option<T>)
+    where
+        T: Into<Date>,
+    {
+        self.end = new.map(Into::into)
     }
 
     /// Get the imask of the task
@@ -266,6 +300,14 @@ impl Task {
         self.imask.as_mut()
     }
 
+    /// Set imask
+    pub fn set_imask<T>(&mut self, new: Option<T>)
+    where
+        T: Into<i64>,
+    {
+        self.imask = new.map(Into::into)
+    }
+
     /// Get the mask of the task
     pub fn mask(&self) -> Option<&String> {
         self.mask.as_ref()
@@ -274,6 +316,14 @@ impl Task {
     /// Get the mask of the task mutable
     pub fn mask_mut(&mut self) -> Option<&mut String> {
         self.mask.as_mut()
+    }
+
+    /// Set mask
+    pub fn set_mask<T>(&mut self, new: Option<T>)
+    where
+        T: Into<String>,
+    {
+        self.mask = new.map(Into::into)
     }
 
     /// Get the modified date of the task
@@ -286,6 +336,14 @@ impl Task {
         self.modified.as_mut()
     }
 
+    /// Set modified
+    pub fn set_modified<T>(&mut self, new: Option<T>)
+    where
+        T: Into<Date>,
+    {
+        self.modified = new.map(Into::into)
+    }
+
     /// Get the parent of the task
     pub fn parent(&self) -> Option<&Uuid> {
         self.parent.as_ref()
@@ -294,6 +352,14 @@ impl Task {
     /// Get the parent of the task mutable
     pub fn parent_mut(&mut self) -> Option<&mut Uuid> {
         self.parent.as_mut()
+    }
+
+    /// Set parent
+    pub fn set_parent<T>(&mut self, new: Option<T>)
+    where
+        T: Into<Uuid>,
+    {
+        self.parent = new.map(Into::into)
     }
 
     /// Get the priority of the task
@@ -306,6 +372,14 @@ impl Task {
         self.priority.as_mut()
     }
 
+    /// Set priority
+    pub fn set_priority<T>(&mut self, new: Option<T>)
+    where
+        T: Into<TaskPriority>,
+    {
+        self.priority = new.map(Into::into)
+    }
+
     /// Get the project of the task
     pub fn project(&self) -> Option<&Project> {
         self.project.as_ref()
@@ -314,6 +388,14 @@ impl Task {
     /// Get the project of the task mutable
     pub fn project_mut(&mut self) -> Option<&mut Project> {
         self.project.as_mut()
+    }
+
+    /// Set project
+    pub fn set_project<T>(&mut self, new: Option<T>)
+    where
+        T: Into<Project>,
+    {
+        self.project = new.map(Into::into)
     }
 
     /// Get the recur of the task
@@ -329,6 +411,14 @@ impl Task {
         self.recur.as_mut()
     }
 
+    /// Set recur
+    pub fn set_recur<T>(&mut self, new: Option<T>)
+    where
+        T: Into<String>,
+    {
+        self.recur = new.map(Into::into)
+    }
+
     /// Get the scheduled date of the task
     pub fn scheduled(&self) -> Option<&Date> {
         self.scheduled.as_ref()
@@ -337,6 +427,14 @@ impl Task {
     /// Get the scheduled date of the task mutable
     pub fn scheduled_mut(&mut self) -> Option<&mut Date> {
         self.scheduled.as_mut()
+    }
+
+    /// Set scheduled
+    pub fn set_scheduled<T>(&mut self, new: Option<T>)
+    where
+        T: Into<Date>,
+    {
+        self.scheduled = new.map(Into::into)
     }
 
     /// Get the start date of the task
@@ -349,6 +447,14 @@ impl Task {
         self.start.as_mut()
     }
 
+    /// Set start
+    pub fn set_start<T>(&mut self, new: Option<T>)
+    where
+        T: Into<Date>,
+    {
+        self.start = new.map(Into::into)
+    }
+
     /// Get the tags of the task
     pub fn tags(&self) -> Option<&Vec<Tag>> {
         self.tags.as_ref()
@@ -357,6 +463,15 @@ impl Task {
     /// Get the tags of the task mutable
     pub fn tags_mut(&mut self) -> Option<&mut Vec<Tag>> {
         self.tags.as_mut()
+    }
+
+    /// Set tags
+    pub fn set_tags<T, K>(&mut self, new: Option<T>)
+    where
+        T: IntoIterator,
+        T::Item: Into<Tag>,
+    {
+        self.tags = new.map(|x| x.into_iter().map(Into::into).collect());
     }
 
     /// Get the until date of the task
@@ -369,6 +484,14 @@ impl Task {
         self.until.as_mut()
     }
 
+    /// Set until
+    pub fn set_until<T>(&mut self, new: Option<T>)
+    where
+        T: Into<Date>,
+    {
+        self.until = new.map(Into::into);
+    }
+
     /// Get the wait date of the task
     pub fn wait(&self) -> Option<&Date> {
         self.wait.as_ref()
@@ -378,6 +501,15 @@ impl Task {
     pub fn wait_mut(&mut self) -> Option<&mut Date> {
         self.wait.as_mut()
     }
+
+    /// Set wait
+    pub fn set_wait<T>(&mut self, new: Option<T>)
+    where
+        T: Into<Date>,
+    {
+        self.wait = new.map(Into::into);
+    }
+
     /// Get the BTreeMap that contains the UDA
     pub fn uda(&self) -> &UDA {
         &self.uda
