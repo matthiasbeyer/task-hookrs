@@ -11,7 +11,7 @@ use date::Date;
 /// Annotation type for task annotations.
 /// Each annotation in taskwarrior consists of a date and a description,
 /// the date is named "entry", the description "description" in the JSON export.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Annotation {
     entry: Date,
     description: String,
