@@ -8,12 +8,20 @@
 error_chain!{
     errors {
         /// Error kind indicating that the JSON parser failed
-        ParserError {}
+        ParserError {
+            description("Failed to create a Task from JSON")
+        }
         /// Error kind indicating that the Reader failed to read something
-        ReaderError {}
+        ReaderError {
+            description("Failed to read tasks from a Reader")
+        }
         /// Error kind indicating that a call to the task warrior binary failed
-        TaskCmdError {}
+        TaskCmdError {
+            description("There was a problem while calling the external 'task' binary")
+        }
         /// Error kind indicating that a conversion to JSON failed
-        SerializeError {}
+        SerializeError {
+            description("A Task could not be converted to JSON")
+        }
     }
 }
