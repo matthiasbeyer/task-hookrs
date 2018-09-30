@@ -40,7 +40,7 @@ use uda::{UDA, UDAName, UDAValue};
 ///
 /// It is deserializeable and serializeable via serde_json, so importing and exporting taskwarrior
 /// tasks is simply serializing and deserializing objects of this type.
-#[derive(Debug, Clone, Builder)]
+#[derive(Debug, Clone, PartialEq, Builder)]
 #[builder(setter(into))]
 pub struct Task {
     /// The temporary assigned task id
