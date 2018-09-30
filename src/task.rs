@@ -57,6 +57,7 @@ pub struct Task {
     #[builder(default = "Date::from(Utc::now().naive_utc())")]
     entry: Date,
     /// The description of the task (i.e. its main content)
+    /// This field is the only mandatory field, when using the TaskBuilder.
     description: String,
     /// A list of annotations with timestamps
     #[builder(default)]
