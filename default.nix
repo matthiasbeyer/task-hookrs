@@ -1,7 +1,7 @@
 { pkgs ? (import <nixpkgs> {}) }:
 
 let
-  env = with pkgs.rustStable; [
+  env = with pkgs.rustChannels.stable; [
     rustc
     cargo
     pkgs.llvmPackages.lldb

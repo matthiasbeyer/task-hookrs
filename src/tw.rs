@@ -9,13 +9,16 @@
 //! in your path. This will always call task and never interact with your `.task` directory itself.
 //! (This is in accordance with the taskwarrior api guide lines.)
 
-use error::{Result, ResultExt, ErrorKind as EK};
+use error::ErrorKind as EK;
 use task::Task;
 use std::process::{Command, Stdio, Child};
 use std::io::Write;
 use std::iter::once;
 use import::import;
+
 use serde_json;
+use failure::Fallible as Result;
+use failure::ResultExt;
 
 /// This will give you all tasks which match the given query in the taskwarrior query syntax.
 /// This is not sanitized. Never get the query string from an untrusted user.
@@ -36,23 +39,21 @@ pub fn add_query_to_cmd(query: &str, mut cmd: Command) -> Command {
 
 /// This executes the given Command and trys to convert the Result into a Vec<Task>.
 pub fn run_query_cmd(mut cmd: Command) -> Result<Vec<Task>> {
-    let mut export = cmd.spawn().chain_err(|| EK::TaskCmdError)?;
-    export.wait().chain_err(|| EK::TaskCmdError)?;
-    import(export.stdout.chain_err(|| EK::TaskCmdError)?)
+    let mut export = cmd.spawn().context(EK::TaskCmdError)?;
+    export.wait().context(EK::TaskCmdError)?;
+    import(export.stdout.ok_or(EK::TaskCmdError)?)
 }
 
 /// This function runs the given Command, pipes the tasks as JSON to it and returns a handle to the child process.
 pub fn save_to_cmd<'a>(tasks: Vec<&'a Task>, mut cmd: Command) -> Result<Child> {
-    let input_buffer = serde_json::to_string(&tasks).chain_err(
-        || EK::SerializeError,
-    )?;
-    let mut import = cmd.spawn().chain_err(|| EK::TaskCmdError)?;
+    let input_buffer = serde_json::to_string(&tasks).context(EK::SerializeError)?;
+    let mut import = cmd.spawn().context(EK::TaskCmdError)?;
     import
         .stdin
         .as_mut()
-        .chain_err(|| EK::TaskCmdError)?
+        .ok_or(EK::TaskCmdError)?
         .write_all(input_buffer.as_bytes())
-        .chain_err(|| EK::TaskCmdError)?;
+        .context(EK::TaskCmdError)?;
     Ok(import)
 }
 
@@ -63,7 +64,7 @@ pub fn save<'a, T>(tasks: T) -> Result<()>
 where
     T: IntoIterator<Item = &'a Task>,
 {
-    save_async(tasks)?.wait().chain_err(|| EK::TaskCmdError)?;
+    save_async(tasks)?.wait().context(EK::TaskCmdError)?;
     Ok(())
 }
 
