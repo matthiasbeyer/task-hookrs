@@ -53,7 +53,7 @@ extern crate uuid;
 #[macro_use]
 extern crate derive_builder;
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 
 #[cfg(test)]
 extern crate env_logger;
