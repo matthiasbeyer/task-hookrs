@@ -18,21 +18,6 @@
 you can write taskwarrior hooks without having to deal with the JSON
 import/export foo by simply using this crate.
 
-# Vacation notice
-
-**Notice:** I, the author of task-hookrs, will be on vacation from mid-May 2018
-until early 2019. I hope I can continue develop task-hookrs during that time, but I
-cannot guarantee that. I hope I can continue development of task-hookrs after that
-and I certainly plan to do so.
-
-With task-hookrs, the situation is a bit different as with my other
-repositories. @maralorn has commit access and is actively developing this
-library (as of the time of writing this note). I'm sure they will respond much
-faster than I can - and I trust them to do the right thing.
-
-@TheNeikos as commit rights to this repository and will respond to issues and
-PRs.
-
 # License
 
     task-hookrs - A Rust library for writing taskwarrior hooks and general interfacing with taskwarrior
