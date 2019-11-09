@@ -4,6 +4,15 @@ This changelog was started with the 0.4.0 release.
 
 ## Next
 
+## 0.7.0
+
+* Bugfix: "imask" field in taskwarrior is a float, change type to f64.
+  This is a breaking API change, thus the minor version is bumped.
+* CI setup was fixed to actually fail when an error happens during
+  compilation/testing. We had luck that it worked before without issue.
+* All rustc versions from 1.32 until beta are tested now via travis, for maximum
+  backwards compat
+
 ## 0.6.0
 
 * Switched error handling to `failure`
