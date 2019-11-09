@@ -813,7 +813,6 @@ mod test {
     use serde_json;
 
     fn mklogger() {
-        use env_logger;
         let _ = env_logger::init();
         debug!("Env-logger enabled");
     }
