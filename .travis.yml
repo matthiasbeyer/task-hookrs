@@ -10,8 +10,8 @@ matrix:
 before_install:
   - sudo apt-get -y install task
 script: |
-  cargo build
-  cargo test
+  cargo build || exit 1
+  cargo test || exit 1
 
   # prepare taskwarrior, initial setup
   yes | task
