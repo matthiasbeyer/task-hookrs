@@ -73,7 +73,7 @@ pub struct Task {
     end: Option<Date>,
     /// The imask is used internally for recurrence
     #[builder(default)]
-    imask: Option<i64>,
+    imask: Option<f64>,
     /// The mask is used internally for recurrence
     #[builder(default)]
     mask: Option<String>,
@@ -131,7 +131,7 @@ impl Task {
         depends: Option<Vec<Uuid>>,
         due: Option<Date>,
         end: Option<Date>,
-        imask: Option<i64>,
+        imask: Option<f64>,
         mask: Option<String>,
         modified: Option<Date>,
         parent: Option<Uuid>,
@@ -292,19 +292,19 @@ impl Task {
     }
 
     /// Get the imask of the task
-    pub fn imask(&self) -> Option<&i64> {
+    pub fn imask(&self) -> Option<&f64> {
         self.imask.as_ref()
     }
 
     /// Get the imask of the task mutable
-    pub fn imask_mut(&mut self) -> Option<&mut i64> {
+    pub fn imask_mut(&mut self) -> Option<&mut f64> {
         self.imask.as_mut()
     }
 
     /// Set imask
     pub fn set_imask<T>(&mut self, new: Option<T>)
     where
-        T: Into<i64>,
+        T: Into<f64>,
     {
         self.imask = new.map(Into::into)
     }
