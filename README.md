@@ -4,7 +4,7 @@
 [taskwarrior](https://taskwarrior.org) hooks.
 
 * [crate](https://crates.io/crates/task-hookrs/)
-* [Documentation](https://matthiasbeyer.github.io/task-hookrs/task_hookrs/index.html)
+* [Documentation](https://docs.rs/task-hookrs/)
 * [travis-ci](https://travis-ci.org/matthiasbeyer/task-hookrs)
 
 [![Build Status](https://travis-ci.org/matthiasbeyer/task-hookrs.svg?branch=master)](https://travis-ci.org/matthiasbeyer/task-hookrs)
