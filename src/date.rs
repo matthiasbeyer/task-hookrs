@@ -6,7 +6,6 @@
 
 //! Module for wrapping chrono::naive::datetime::NaiveDateTime
 
-use std::error::Error;
 use std::ops::{Deref, DerefMut};
 
 use serde::Serialize;
@@ -78,7 +77,7 @@ impl<'de> Deserialize<'de> for Date {
             {
                 NaiveDateTime::parse_from_str(value, TASKWARRIOR_DATETIME_TEMPLATE)
                     .map(|d| Date(d))
-                    .map_err(|e| SerdeError::custom(e.description()))
+                    .map_err(|e| SerdeError::custom(e.to_string()))
             }
         }
 
