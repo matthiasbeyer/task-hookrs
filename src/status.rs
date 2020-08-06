@@ -11,7 +11,7 @@ use std::fmt::{Display, Formatter, Error as FmtError};
 /// Enum for status taskwarrior supports.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub enum TaskStatus {
-    /// Pening status type
+    /// Pending status type
     #[serde(rename = "pending")]
     Pending,
 
