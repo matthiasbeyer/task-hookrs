@@ -859,7 +859,8 @@ mod test {
 "description": "test",
 "entry": "20150619T165438Z",
 "status": "waiting",
-"uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"
+"uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0",
+"urgency": 5.3
 }"#;
 
         println!("{}", s);
@@ -875,6 +876,7 @@ mod test {
         assert!(
             task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
         );
+        assert!(task.urgency() == Some(&5.3));
 
         let back = serde_json::to_string(&task).unwrap();
 
@@ -885,6 +887,7 @@ mod test {
         assert!(back.contains("status"));
         assert!(back.contains("waiting"));
         assert!(back.contains("uuid"));
+        assert!(back.contains("urgency"));
         assert!(back.contains("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"));
     }
 
@@ -918,6 +921,8 @@ mod test {
         assert!(
             task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
         );
+
+        assert!(task.urgency() == Some(&0.583562));
 
         assert!(task.modified() == Some(&mkdate("20160327T164007Z")));
         assert!(task.project() == Some(&String::from("someproject")));
@@ -972,7 +977,7 @@ mod test {
                {"entry":"20160423T125926Z","description":"Another Annotation"},
                {"entry":"20160422T125942Z","description":"A Third Anno"}
                ],
-"urgency": 0.583562
+"urgency": -5
 }"#;
 
         println!("{}", s);
@@ -981,6 +986,8 @@ mod test {
         println!("{:?}", task);
         assert!(task.is_ok());
         let task: Task = task.unwrap();
+
+        assert!(task.urgency() == Some(&-5.0));
 
         let all_annotations =
             vec![
@@ -1113,6 +1120,7 @@ mod test {
         assert!(t.project().is_some());
         assert_eq!(t.project().unwrap(), "project");
         assert!(t.tags().is_some());
+        assert!(t.urgency().is_none());
         assert_eq!(
             t.tags().unwrap(),
             &vec!["search".to_owned(), "things".to_owned()]
