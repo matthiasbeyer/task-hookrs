@@ -70,4 +70,5 @@ pub mod status;
 pub mod tag;
 pub mod task;
 pub mod uda;
+pub mod urgency;
 pub mod tw;

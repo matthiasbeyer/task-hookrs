@@ -23,6 +23,7 @@ use tag::Tag;
 use date::Date;
 use annotation::Annotation;
 use uda::{UDA, UDAName, UDAValue};
+use urgency::Urgency;
 
 /// Task type
 ///
@@ -107,6 +108,9 @@ pub struct Task {
     /// This hides the task until the wait date
     #[builder(default)]
     wait: Option<Date>,
+    /// This contains the urgency of the task
+    #[builder(default)]
+    urgency: Option<Urgency>,
 
     /// A map of user defined attributes
     #[builder(default)]
@@ -143,6 +147,7 @@ impl Task {
         tags: Option<Vec<Tag>>,
         until: Option<Date>,
         wait: Option<Date>,
+        urgency: Option<Urgency>,
         uda: UDA,
     ) -> Task {
         Task {
@@ -168,6 +173,7 @@ impl Task {
             tags: tags,
             until: until,
             wait: wait,
+            urgency: urgency,
             uda: uda,
         }
     }
@@ -493,6 +499,21 @@ impl Task {
         self.until = new.map(Into::into);
     }
 
+    /// Get the urgency of the task
+    pub fn urgency(&self) -> Option<&Urgency> {
+        self.urgency.as_ref()
+    }
+
+    /// Get the urgency of the task
+    pub fn urgency_mut(&mut self) -> Option<&mut Urgency> {
+        self.urgency.as_mut()
+    }
+
+    /// Set the urgency of the task
+    pub fn set_urgency<T>(&mut self, new: Option<T>) where T: Into<Urgency> {
+        self.urgency = new.map(Into::into);
+    }
+
     /// Get the wait date of the task
     pub fn wait(&self) -> Option<&Date> {
         self.wait.as_ref()
@@ -580,6 +601,9 @@ impl Serialize for Task {
         self.wait.as_ref().map(
             |ref v| state.serialize_entry("wait", v),
         );
+        self.urgency.as_ref().map(
+            |ref v| state.serialize_entry("urgency", v),
+        );
 
         for (key, value) in self.uda().iter() {
             state.serialize_entry(key, value)?;
@@ -617,6 +641,7 @@ impl<'de> Deserialize<'de> for Task {
             "tags",
             "until",
             "wait",
+            "urgency",
             "uda",
         ];
         deserializer.deserialize_struct("Task", FIELDS, TaskDeserializeVisitor)
@@ -660,6 +685,7 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
         let mut tags = None;
         let mut until = None;
         let mut wait = None;
+        let mut urgency = None;
         let mut uda = UDA::default();
 
         loop {
@@ -740,6 +766,9 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
                 "wait" => {
                     wait = Some(visitor.next_value()?);
                 }
+                "urgency" => {
+                    urgency = Some(visitor.next_value()?);
+                }
 
                 field => {
                     debug!("Inserting '{}' as UDA", field);
@@ -792,6 +821,7 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
             tags,
             until,
             wait,
+            urgency,
             uda,
         );
 
