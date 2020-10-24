@@ -510,7 +510,10 @@ impl Task {
     }
 
     /// Set the urgency of the task
-    pub fn set_urgency<T>(&mut self, new: Option<T>) where T: Into<Urgency> {
+    pub fn set_urgency<T>(&mut self, new: Option<T>)
+    where
+        T: Into<Urgency>,
+    {
         self.urgency = new.map(Into::into);
     }
 
