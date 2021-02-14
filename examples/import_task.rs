@@ -15,7 +15,7 @@ fn main() {
     assert_eq!(*t.status(), TaskStatus::Pending);
     assert_eq!(*t.description(), "Test task".to_owned());
     assert_eq!(t.priority(), None);
+    assert_eq!(t.uda().get("priority"), None);
 
     println!("Successfully imported:\n{:?}", t);
 }
-

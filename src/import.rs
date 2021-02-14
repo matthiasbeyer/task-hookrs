@@ -165,7 +165,7 @@ fn test_one_single() {
     assert!(task.project() == Some(&String::from("someproject")));
     if let Some(tags) = task.tags() {
         for tag in tags {
-            let any_tag = ["some", "tags", "are", "here"].into_iter().any(
+            let any_tag = ["some", "tags", "are", "here"].iter().any(
                 |t| tag == *t,
             );
             assert!(any_tag, "Tag {} missing", tag);
