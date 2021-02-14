@@ -1072,6 +1072,47 @@ mod test {
         assert!(back.contains("test_int_uda"));
         assert!(back.contains("1234"));
     }
+    #[test]
+    fn test_priority() {
+        let s = r#"{
+"id":9,
+"description":"Some long description for a task",
+"entry":"20201021T065503Z",
+"estimate":"30",
+"modified":"20210213T233603Z",
+"priority":"U",
+"status":"pending",
+"uuid":"6c4c9ee8-d6c4-4d64-a84d-bf9cb710684e",
+"urgency":23
+}"#;
+
+        println!("{}", s);
+
+        let task = serde_json::from_str(s);
+        println!("{:?}", task);
+        assert!(task.is_ok());
+        let task: Task = task.unwrap();
+
+        if let Some(priority) = task.priority() {
+            assert!(priority == &"U".to_string());
+        } else {
+            assert!(false, "Priority completely missing");
+        }
+
+        let back = serde_json::to_string_pretty(&task);
+        assert!(back.is_ok());
+        let back = back.unwrap();
+        println!("{}", back);
+        assert!(back.contains("description"));
+        assert!(back.contains("Some long description for a task"));
+        assert!(back.contains("entry"));
+        assert!(back.contains("20201021T065503Z"));
+        assert!(back.contains("priority"));
+        assert!(back.contains("status"));
+        assert!(back.contains("pending"));
+        assert!(back.contains("uuid"));
+        assert!(back.contains("6c4c9ee8-d6c4-4d64-a84d-bf9cb710684e"));
+    }
 
     #[test]
     fn test_builder_simple() {
