@@ -6,12 +6,19 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - nightly
+          - beta
+          - stable
+          - 1.45.0
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: ${{ matrix.rust }}
           override: true
       - uses: actions-rs/cargo@v1
         with:
@@ -20,14 +27,27 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - nightly
+          - beta
+          - stable
+          - 1.45.0
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: ${{ matrix.rust }}
           override: true
       - run: sudo apt-get update && sudo apt-get install -y taskwarrior
       - uses: actions-rs/cargo@v1
         with:
           command: test
+      - run: |
+          # prepare taskwarrior, initial setup
+          task rc.confirmation=off || echo 0
+          cargo run --example create_task | tee /tmp/create_task
+          task import /tmp/create_task || exit 1
+          cat /tmp/create_task | cargo run --example import_task || exit 1
