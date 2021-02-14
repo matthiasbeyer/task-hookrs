@@ -4,20 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 
-//! Module containing TaskPriority types and trait impls
+//! Module containing `TaskPriority` type
 
-/// Enum for the priorities taskwarrior supports.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum TaskPriority {
-    /// Low prio for a Task
-    #[serde(rename = "L")]
-    Low,
-
-    /// Medium prio for a Task
-    #[serde(rename = "M")]
-    Medium,
-
-    /// High prio for a Task
-    #[serde(rename = "H")]
-    High,
-}
+/// type definition for TaskPriority
+pub type TaskPriority = String;
