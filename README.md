@@ -5,10 +5,7 @@
 
 * [crate](https://crates.io/crates/task-hookrs/)
 * [Documentation](https://docs.rs/task-hookrs/)
-* [travis-ci](https://travis-ci.org/matthiasbeyer/task-hookrs)
 
-[![Build Status](https://travis-ci.org/matthiasbeyer/task-hookrs.svg?branch=master)](https://travis-ci.org/matthiasbeyer/task-hookrs)
-[![GitHub tag](https://img.shields.io/github/tag/matthiasbeyer/task-hookrs.svg?maxAge=2592000)]()
 [![Crates.io](https://img.shields.io/crates/v/task-hookrs.svg?maxAge=2592000)]()
 [![Crates.io](https://img.shields.io/crates/d/task-hookrs.svg?maxAge=2592000)]()
 [![Crates.io](https://img.shields.io/crates/dv/task-hookrs.svg?maxAge=2592000)]()
