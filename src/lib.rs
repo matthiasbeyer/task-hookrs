@@ -41,7 +41,7 @@
     unused_must_use,
     unused_mut,
     unused_qualifications,
-    while_true,
+    while_true
 )]
 
 extern crate chrono;
@@ -69,6 +69,6 @@ pub mod project;
 pub mod status;
 pub mod tag;
 pub mod task;
+pub mod tw;
 pub mod uda;
 pub mod urgency;
-pub mod tw;

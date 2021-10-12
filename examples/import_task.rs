@@ -1,12 +1,12 @@
-extern crate task_hookrs;
 extern crate chrono;
 extern crate serde_json;
+extern crate task_hookrs;
 extern crate uuid;
 
 use std::io::stdin;
 
-use task_hookrs::status::TaskStatus;
 use task_hookrs::import::import;
+use task_hookrs::status::TaskStatus;
 
 fn main() {
     let mut tasks = import(stdin()).unwrap();

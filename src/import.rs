@@ -9,23 +9,27 @@
 use std::io::BufRead;
 use std::io::Read;
 
-use serde_json;
+use failure::Error;
 use failure::Fallible as Result;
 use failure::ResultExt;
-use failure::Error;
+use serde_json;
 
-use task::Task;
 use error::ErrorKind as EK;
+use task::Task;
 
 /// Import taskwarrior-exported JSON. This expects an JSON Array of objects, as exported by
 /// taskwarrior.
 pub fn import<R: Read>(r: R) -> Result<Vec<Task>> {
-    serde_json::from_reader(r).context(EK::ParserError).map_err(Error::from)
+    serde_json::from_reader(r)
+        .context(EK::ParserError)
+        .map_err(Error::from)
 }
 
 /// Import a single JSON-formatted Task
 pub fn import_task(s: &str) -> Result<Task> {
-    serde_json::from_str(s).context(EK::ParserError).map_err(Error::from)
+    serde_json::from_str(s)
+        .context(EK::ParserError)
+        .map_err(Error::from)
 }
 
 /// Reads line by line and tries to parse a task-object per line.
@@ -33,7 +37,11 @@ pub fn import_tasks<BR: BufRead>(r: BR) -> Vec<Result<Task>> {
     let mut vt = Vec::new();
     for line in r.lines() {
         if line.is_err() {
-            vt.push(Err(line.unwrap_err()).context(EK::ReaderError).map_err(Error::from));
+            vt.push(
+                Err(line.unwrap_err())
+                    .context(EK::ReaderError)
+                    .map_err(Error::from),
+            );
             continue;
         }
         // Unwrap is safe because of continue above
@@ -127,11 +135,11 @@ fn test_two() {
 
 #[test]
 fn test_one_single() {
-    use status::TaskStatus;
+    use chrono::NaiveDateTime;
     use date::Date;
     use date::TASKWARRIOR_DATETIME_TEMPLATE;
+    use status::TaskStatus;
     use uuid::Uuid;
-    use chrono::NaiveDateTime;
     fn mkdate(s: &str) -> Date {
         let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);
         Date::from(n.unwrap())
@@ -165,9 +173,7 @@ fn test_one_single() {
     assert!(task.project() == Some(&String::from("someproject")));
     if let Some(tags) = task.tags() {
         for tag in tags {
-            let any_tag = ["some", "tags", "are", "here"].iter().any(
-                |t| tag == *t,
-            );
+            let any_tag = ["some", "tags", "are", "here"].iter().any(|t| tag == *t);
             assert!(any_tag, "Tag {} missing", tag);
         }
     } else {
@@ -179,8 +185,8 @@ fn test_one_single() {
 
 #[test]
 fn test_two_single() {
-    use std::io::BufReader;
     use status::TaskStatus;
+    use std::io::BufReader;
     let s = r#"
 {"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}
 {"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}"#;

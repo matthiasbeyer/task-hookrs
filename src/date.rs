@@ -8,13 +8,13 @@
 
 use std::ops::{Deref, DerefMut};
 
-use serde::Serialize;
-use serde::Serializer;
+use chrono::NaiveDateTime;
+use serde::de::Error as SerdeError;
+use serde::de::Visitor;
 use serde::Deserialize;
 use serde::Deserializer;
-use serde::de::Visitor;
-use serde::de::Error as SerdeError;
-use chrono::NaiveDateTime;
+use serde::Serialize;
+use serde::Serializer;
 
 /// Date is a NaiveDateTime-Wrapper object to be able to implement foreign traits on it
 #[derive(Clone, Debug, Hash, Eq, PartialEq)]

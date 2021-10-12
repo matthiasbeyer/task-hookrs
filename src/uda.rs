@@ -1,15 +1,15 @@
 //! Module containing the types for User Defined Attributes (UDA)
 
 use std::collections::BTreeMap;
-use std::result::Result as RResult;
 use std::fmt;
+use std::result::Result as RResult;
 
-use serde::Serialize;
-use serde::Serializer;
+use serde::de;
+use serde::de::Visitor;
 use serde::Deserialize;
 use serde::Deserializer;
-use serde::de::Visitor;
-use serde::de;
+use serde::Serialize;
+use serde::Serializer;
 
 /// The name of a UDA is just a string.
 pub type UDAName = String;

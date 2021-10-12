@@ -4,21 +4,20 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 
-
 //! This module offers functions to interact with taskwarrior. This will expect the `task` binary
 //! in your path. This will always call task and never interact with your `.task` directory itself.
 //! (This is in accordance with the taskwarrior api guide lines.)
 
 use error::ErrorKind as EK;
-use task::Task;
-use std::process::{Command, Stdio, Child};
+use import::import;
 use std::io::Write;
 use std::iter::once;
-use import::import;
+use std::process::{Child, Command, Stdio};
+use task::Task;
 
-use serde_json;
 use failure::Fallible as Result;
 use failure::ResultExt;
+use serde_json;
 
 /// This will give you all tasks which match the given query in the taskwarrior query syntax.
 /// This is not sanitized. Never get the query string from an untrusted user.
