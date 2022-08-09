@@ -721,7 +721,7 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
                 "depends" => {
                     let raw: String = visitor.next_value()?;
                     let mut uuids = vec![];
-                    for uuid in raw.split(",") {
+                    for uuid in raw.split(',') {
                         uuids.push(Uuid::parse_str(uuid).map_err(V::Error::custom)?);
                     }
                     depends = Some(uuids);
