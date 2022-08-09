@@ -158,7 +158,7 @@ fn test_one_single() {
     "urgency": 0.583562
 }
 "#;
-    let imported = import_task(&s);
+    let imported = import_task(s);
     assert!(imported.is_ok());
 
     // Check for every information
