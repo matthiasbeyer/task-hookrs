@@ -36,9 +36,9 @@ pub fn import_task(s: &str) -> Result<Task> {
 pub fn import_tasks<BR: BufRead>(r: BR) -> Vec<Result<Task>> {
     let mut vt = Vec::new();
     for line in r.lines() {
-        if line.is_err() {
+        if let Err(err) = line {
             vt.push(
-                Err(line.unwrap_err())
+                Err(err)
                     .context(EK::ReaderError)
                     .map_err(Error::from),
             );
