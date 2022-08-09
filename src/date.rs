@@ -41,7 +41,7 @@ impl From<NaiveDateTime> for Date {
 }
 
 /// The date-time parsing template used to parse the date time data exported by taskwarrior.
-pub static TASKWARRIOR_DATETIME_TEMPLATE: &'static str = "%Y%m%dT%H%M%SZ";
+pub static TASKWARRIOR_DATETIME_TEMPLATE: &str = "%Y%m%dT%H%M%SZ";
 
 impl Serialize for Date {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -76,7 +76,7 @@ impl<'de> Deserialize<'de> for Date {
                 E: SerdeError,
             {
                 NaiveDateTime::parse_from_str(value, TASKWARRIOR_DATETIME_TEMPLATE)
-                    .map(|d| Date(d))
+                    .map(Date)
                     .map_err(|e| SerdeError::custom(e.to_string()))
             }
         }

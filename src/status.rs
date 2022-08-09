@@ -35,11 +35,11 @@ pub enum TaskStatus {
 impl Display for TaskStatus {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), FmtError> {
         match self {
-            &TaskStatus::Pending => write!(fmt, "Pending"),
-            &TaskStatus::Deleted => write!(fmt, "Deleted"),
-            &TaskStatus::Completed => write!(fmt, "Completed"),
-            &TaskStatus::Waiting => write!(fmt, "Waiting"),
-            &TaskStatus::Recurring => write!(fmt, "Recurring"),
+            TaskStatus::Pending => write!(fmt, "Pending"),
+            TaskStatus::Deleted => write!(fmt, "Deleted"),
+            TaskStatus::Completed => write!(fmt, "Completed"),
+            TaskStatus::Waiting => write!(fmt, "Waiting"),
+            TaskStatus::Recurring => write!(fmt, "Recurring"),
         }
     }
 }

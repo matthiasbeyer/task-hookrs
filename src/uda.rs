@@ -31,9 +31,9 @@ impl Serialize for UDAValue {
         S: Serializer,
     {
         match self {
-            &UDAValue::Str(ref s) => s.serialize(serializer),
-            &UDAValue::U64(s) => s.serialize(serializer),
-            &UDAValue::F64(s) => s.serialize(serializer),
+            UDAValue::Str(ref s) => s.serialize(serializer),
+            UDAValue::U64(s) => s.serialize(serializer),
+            UDAValue::F64(s) => s.serialize(serializer),
         }
     }
 }

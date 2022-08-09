@@ -123,6 +123,7 @@ pub struct Task {
  */
 impl Task {
     /// Create a new Task instance
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: Option<u64>,
 
@@ -151,30 +152,30 @@ impl Task {
         uda: UDA,
     ) -> Task {
         Task {
-            id: id,
-            status: status,
-            uuid: uuid,
-            entry: entry,
-            description: description,
+            id,
+            status,
+            uuid,
+            entry,
+            description,
 
-            annotations: annotations,
-            depends: depends,
-            due: due,
-            end: end,
-            imask: imask,
-            mask: mask,
-            modified: modified,
-            parent: parent,
-            priority: priority,
-            project: project,
-            recur: recur,
-            scheduled: scheduled,
-            start: start,
-            tags: tags,
-            until: until,
-            wait: wait,
-            urgency: urgency,
-            uda: uda,
+            annotations,
+            depends,
+            due,
+            end,
+            imask,
+            mask,
+            modified,
+            parent,
+            priority,
+            project,
+            recur,
+            scheduled,
+            start,
+            tags,
+            until,
+            wait,
+            urgency,
+            uda,
         }
     }
 
@@ -564,7 +565,7 @@ impl Serialize for Task {
         self.recur
             .as_ref()
             .map(|ref v| state.serialize_entry("recur", v));
-        self.depends.as_ref().map(|ref v| {
+        self.depends.as_ref().map(|v| {
             let v: Vec<String> = v.iter().map(Uuid::to_string).collect();
             state.serialize_entry("depends", &v.join(","))
         });
@@ -621,7 +622,7 @@ impl<'de> Deserialize<'de> for Task {
     where
         D: Deserializer<'de>,
     {
-        static FIELDS: &'static [&'static str] = &[
+        static FIELDS: &[&str] = &[
             "id",
             "status",
             "uuid",
@@ -721,7 +722,7 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
                 "depends" => {
                     let raw: String = visitor.next_value()?;
                     let mut uuids = vec![];
-                    for uuid in raw.split(",") {
+                    for uuid in raw.split(',') {
                         uuids.push(Uuid::parse_str(uuid).map_err(V::Error::custom)?);
                     }
                     depends = Some(uuids);
@@ -780,25 +781,10 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
             }
         }
 
-        let status = match status {
-            Some(status) => status,
-            None => Err(V::Error::missing_field("status"))?,
-        };
-
-        let uuid = match uuid {
-            Some(uuid) => uuid,
-            None => Err(V::Error::missing_field("uuid"))?,
-        };
-
-        let entry = match entry {
-            Some(entry) => entry,
-            None => Err(V::Error::missing_field("entry"))?,
-        };
-
-        let description = match description {
-            Some(description) => description,
-            None => Err(V::Error::missing_field("description"))?,
-        };
+        let status = status.ok_or_else(|| V::Error::missing_field("status"))?;
+        let uuid = uuid.ok_or_else(|| V::Error::missing_field("uuid"))?;
+        let entry = entry.ok_or_else(|| V::Error::missing_field("entry"))?;
+        let description = description.ok_or_else(|| V::Error::missing_field("description"))?;
 
         let task = Task::new(
             id,
@@ -871,13 +857,14 @@ mod test {
         assert!(task.is_ok());
         let task: Task = task.unwrap();
 
-        assert!(task.status().clone() == TaskStatus::Waiting);
-        assert!(task.description() == "test");
-        assert!(task.entry().clone() == mkdate("20150619T165438Z"));
-        assert!(
-            task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
+        assert_eq!(*task.status(), TaskStatus::Waiting);
+        assert_eq!(task.description(), "test");
+        assert_eq!(*task.entry(), mkdate("20150619T165438Z"));
+        assert_eq!(
+            *task.uuid(),
+            Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
         );
-        assert!(task.urgency() == Some(&5.3));
+        assert_eq!(task.urgency(), Some(&5.3));
 
         let back = serde_json::to_string(&task).unwrap();
 
@@ -916,17 +903,16 @@ mod test {
         assert!(task.is_ok());
         let task: Task = task.unwrap();
 
-        assert!(task.status().clone() == TaskStatus::Waiting);
-        assert!(task.description() == "some description");
-        assert!(task.entry().clone() == mkdate("20150619T165438Z"));
-        assert!(
-            task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
+        assert_eq!(*task.status(), TaskStatus::Waiting);
+        assert_eq!(task.description(), "some description");
+        assert_eq!(*task.entry(), mkdate("20150619T165438Z"));
+        assert_eq!(
+            *task.uuid(),
+            Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
         );
-
-        assert!(task.urgency() == Some(&0.583562));
-
-        assert!(task.modified() == Some(&mkdate("20160327T164007Z")));
-        assert!(task.project() == Some(&String::from("someproject")));
+        assert_eq!(task.urgency(), Some(&0.583562));
+        assert_eq!(task.modified(), Some(&mkdate("20160327T164007Z")));
+        assert_eq!(task.project(), Some(&String::from("someproject")));
 
         if let Some(tags) = task.tags() {
             for tag in tags {
@@ -934,10 +920,10 @@ mod test {
                 assert!(any_tag, "Tag {} missing", tag);
             }
         } else {
-            assert!(false, "Tags completely missing");
+            panic!("Tags completely missing");
         }
 
-        assert!(task.wait() == Some(&mkdate("20160508T164007Z")));
+        assert_eq!(task.wait(), Some(&mkdate("20160508T164007Z")));
 
         let back = serde_json::to_string(&task).unwrap();
 
@@ -988,7 +974,7 @@ mod test {
         assert!(task.is_ok());
         let task: Task = task.unwrap();
 
-        assert!(task.urgency() == Some(&-5.0));
+        assert_eq!(task.urgency(), Some(&-5.0));
 
         let all_annotations = vec![
             Annotation::new(mkdate("20160423T125911Z"), String::from("An Annotation")),
@@ -1010,7 +996,7 @@ mod test {
                 assert!(r, "Annotation {:?} missing or buggy", annotation);
             }
         } else {
-            assert!(false, "Annotations missing");
+            panic!("Annotations missing");
         }
     }
     #[test]
@@ -1091,9 +1077,9 @@ mod test {
         let task: Task = task.unwrap();
 
         if let Some(priority) = task.priority() {
-            assert!(priority == &"U".to_string());
+            assert_eq!(*priority, "U".to_string());
         } else {
-            assert!(false, "Priority completely missing");
+            panic!("Priority completely missing");
         }
 
         let back = serde_json::to_string_pretty(&task);

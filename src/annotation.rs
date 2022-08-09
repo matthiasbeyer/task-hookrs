@@ -21,8 +21,8 @@ impl Annotation {
     /// Create a new Annotation object
     pub fn new(entry: Date, description: String) -> Annotation {
         Annotation {
-            entry: entry,
-            description: description,
+            entry,
+            description,
         }
     }
 

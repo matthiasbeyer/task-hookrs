@@ -103,12 +103,28 @@ jobs:
           task import /tmp/create_task || exit 1
           cat /tmp/create_task | cargo run --example import_task || exit 1
 
+  clippy:
+    needs: check
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: 1.60.0
+          override: true
+      - uses: swatinem/rust-cache@v1
+      - run: rustup component add clippy
+      - name: cargo-clippy
+        run: cargo clippy --all --all-targets --all-features -- -D warnings
+
   ci:
     name: CI
     if: ${{ success() }}
     needs:
-      - dco-check
       - check
+      - clippy
+      - dco-check
       - deny
       - test
     runs-on: ubuntu-latest
