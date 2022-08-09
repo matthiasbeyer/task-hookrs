@@ -123,6 +123,7 @@ pub struct Task {
  */
 impl Task {
     /// Create a new Task instance
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: Option<u64>,
 
