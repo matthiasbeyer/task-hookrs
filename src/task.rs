@@ -564,7 +564,7 @@ impl Serialize for Task {
         self.recur
             .as_ref()
             .map(|ref v| state.serialize_entry("recur", v));
-        self.depends.as_ref().map(|ref v| {
+        self.depends.as_ref().map(|v| {
             let v: Vec<String> = v.iter().map(Uuid::to_string).collect();
             state.serialize_entry("depends", &v.join(","))
         });
