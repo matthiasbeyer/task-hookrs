@@ -621,7 +621,7 @@ impl<'de> Deserialize<'de> for Task {
     where
         D: Deserializer<'de>,
     {
-        static FIELDS: &'static [&'static str] = &[
+        static FIELDS: &[&str] = &[
             "id",
             "status",
             "uuid",
