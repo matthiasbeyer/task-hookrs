@@ -934,7 +934,7 @@ mod test {
                 assert!(any_tag, "Tag {} missing", tag);
             }
         } else {
-            assert!(false, "Tags completely missing");
+            panic!("Tags completely missing");
         }
 
         assert!(task.wait() == Some(&mkdate("20160508T164007Z")));
@@ -1010,7 +1010,7 @@ mod test {
                 assert!(r, "Annotation {:?} missing or buggy", annotation);
             }
         } else {
-            assert!(false, "Annotations missing");
+            panic!("Annotations missing");
         }
     }
     #[test]
@@ -1093,7 +1093,7 @@ mod test {
         if let Some(priority) = task.priority() {
             assert!(priority == &"U".to_string());
         } else {
-            assert!(false, "Priority completely missing");
+            panic!("Priority completely missing");
         }
 
         let back = serde_json::to_string_pretty(&task);

@@ -177,7 +177,7 @@ fn test_one_single() {
             assert!(any_tag, "Tag {} missing", tag);
         }
     } else {
-        assert!(false, "Tags completely missing");
+        panic!("Tags completely missing");
     }
 
     assert!(task.wait() == Some(&mkdate("20160508T164007Z")));
