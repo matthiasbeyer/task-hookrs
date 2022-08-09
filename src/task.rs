@@ -781,25 +781,10 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
             }
         }
 
-        let status = match status {
-            Some(status) => status,
-            None => Err(V::Error::missing_field("status"))?,
-        };
-
-        let uuid = match uuid {
-            Some(uuid) => uuid,
-            None => Err(V::Error::missing_field("uuid"))?,
-        };
-
-        let entry = match entry {
-            Some(entry) => entry,
-            None => Err(V::Error::missing_field("entry"))?,
-        };
-
-        let description = match description {
-            Some(description) => description,
-            None => Err(V::Error::missing_field("description"))?,
-        };
+        let status = status.ok_or_else(|| V::Error::missing_field("status"))?;
+        let uuid = uuid.ok_or_else(|| V::Error::missing_field("uuid"))?;
+        let entry = entry.ok_or_else(|| V::Error::missing_field("entry"))?;
+        let description = description.ok_or_else(|| V::Error::missing_field("description"))?;
 
         let task = Task::new(
             id,
