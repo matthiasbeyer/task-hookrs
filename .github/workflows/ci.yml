@@ -55,6 +55,26 @@ jobs:
         run: pip install gitlint
       - run: gitlint --commits $(git merge-base origin/master HEAD)..
 
+  deny:
+    name: deny
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        checks:
+          - advisories
+          - bans licenses sources
+
+    # Prevent sudden announcement of a new advisory from failing ci:
+    continue-on-error: ${{ matrix.checks == 'advisories' }}
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: cargo-deny
+      uses: EmbarkStudios/cargo-deny-action@v1
+      with:
+        command: check ${{ matrix.checks }}
+
   test:
     name: Test Suite
     runs-on: ubuntu-latest
@@ -89,6 +109,7 @@ jobs:
     needs:
       - dco-check
       - check
+      - deny
       - test
     runs-on: ubuntu-latest
     steps:
