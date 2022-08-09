@@ -41,6 +41,20 @@ jobs:
           command: fmt
           args: -- --check
 
+  dco-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v4.0.0
+        with:
+          python-version: '3.x'
+      - name: Install gitlint
+        run: pip install gitlint
+      - run: gitlint --commits $(git merge-base origin/master HEAD)..
+
   test:
     name: Test Suite
     runs-on: ubuntu-latest
@@ -73,6 +87,7 @@ jobs:
     name: CI
     if: ${{ success() }}
     needs:
+      - dco-check
       - check
       - test
     runs-on: ubuntu-latest
