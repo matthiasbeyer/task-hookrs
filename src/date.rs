@@ -76,7 +76,7 @@ impl<'de> Deserialize<'de> for Date {
                 E: SerdeError,
             {
                 NaiveDateTime::parse_from_str(value, TASKWARRIOR_DATETIME_TEMPLATE)
-                    .map(|d| Date(d))
+                    .map(Date)
                     .map_err(|e| SerdeError::custom(e.to_string()))
             }
         }
