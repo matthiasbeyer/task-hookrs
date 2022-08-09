@@ -44,7 +44,7 @@ pub fn run_query_cmd(mut cmd: Command) -> Result<Vec<Task>> {
 }
 
 /// This function runs the given Command, pipes the tasks as JSON to it and returns a handle to the child process.
-pub fn save_to_cmd<'a>(tasks: Vec<&'a Task>, mut cmd: Command) -> Result<Child> {
+pub fn save_to_cmd(tasks: Vec<&'_ Task>, mut cmd: Command) -> Result<Child> {
     let input_buffer = serde_json::to_string(&tasks).context(EK::SerializeError)?;
     let mut import = cmd.spawn().context(EK::TaskCmdError)?;
     import
