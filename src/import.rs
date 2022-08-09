@@ -45,7 +45,7 @@ pub fn import_tasks<BR: BufRead>(r: BR) -> Vec<Result<Task>> {
             continue;
         }
         // Unwrap is safe because of continue above
-        if line.as_ref().unwrap().len() <= 0 {
+        if line.as_ref().unwrap().is_empty() {
             // Empty strings are not usable, and shall be silently ignored
             continue;
         }
