@@ -871,13 +871,14 @@ mod test {
         assert!(task.is_ok());
         let task: Task = task.unwrap();
 
-        assert!(task.status().clone() == TaskStatus::Waiting);
-        assert!(task.description() == "test");
-        assert!(task.entry().clone() == mkdate("20150619T165438Z"));
-        assert!(
-            task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
+        assert_eq!(*task.status(), TaskStatus::Waiting);
+        assert_eq!(task.description(), "test");
+        assert_eq!(*task.entry(), mkdate("20150619T165438Z"));
+        assert_eq!(
+            *task.uuid(),
+            Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
         );
-        assert!(task.urgency() == Some(&5.3));
+        assert_eq!(task.urgency(), Some(&5.3));
 
         let back = serde_json::to_string(&task).unwrap();
 
@@ -916,17 +917,16 @@ mod test {
         assert!(task.is_ok());
         let task: Task = task.unwrap();
 
-        assert!(task.status().clone() == TaskStatus::Waiting);
-        assert!(task.description() == "some description");
-        assert!(task.entry().clone() == mkdate("20150619T165438Z"));
-        assert!(
-            task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
+        assert_eq!(*task.status(), TaskStatus::Waiting);
+        assert_eq!(task.description(), "some description");
+        assert_eq!(*task.entry(), mkdate("20150619T165438Z"));
+        assert_eq!(
+            *task.uuid(),
+            Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
         );
-
-        assert!(task.urgency() == Some(&0.583562));
-
-        assert!(task.modified() == Some(&mkdate("20160327T164007Z")));
-        assert!(task.project() == Some(&String::from("someproject")));
+        assert_eq!(task.urgency(), Some(&0.583562));
+        assert_eq!(task.modified(), Some(&mkdate("20160327T164007Z")));
+        assert_eq!(task.project(), Some(&String::from("someproject")));
 
         if let Some(tags) = task.tags() {
             for tag in tags {
@@ -937,7 +937,7 @@ mod test {
             panic!("Tags completely missing");
         }
 
-        assert!(task.wait() == Some(&mkdate("20160508T164007Z")));
+        assert_eq!(task.wait(), Some(&mkdate("20160508T164007Z")));
 
         let back = serde_json::to_string(&task).unwrap();
 
@@ -988,7 +988,7 @@ mod test {
         assert!(task.is_ok());
         let task: Task = task.unwrap();
 
-        assert!(task.urgency() == Some(&-5.0));
+        assert_eq!(task.urgency(), Some(&-5.0));
 
         let all_annotations = vec![
             Annotation::new(mkdate("20160423T125911Z"), String::from("An Annotation")),
@@ -1091,7 +1091,7 @@ mod test {
         let task: Task = task.unwrap();
 
         if let Some(priority) = task.priority() {
-            assert!(priority == &"U".to_string());
+            assert_eq!(*priority, "U".to_string());
         } else {
             panic!("Priority completely missing");
         }

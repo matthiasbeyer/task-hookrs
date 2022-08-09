@@ -163,14 +163,14 @@ fn test_one_single() {
 
     // Check for every information
     let task = imported.unwrap();
-    assert!(task.status() == &TaskStatus::Waiting);
-    assert!(task.description() == "some description");
-    assert!(task.entry().clone() == mkdate("20150619T165438Z"));
-    assert!(
-        task.uuid().clone() == Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
+    assert_eq!(*task.status(), TaskStatus::Waiting);
+    assert_eq!(task.description(), "some description");
+    assert_eq!(*task.entry(), mkdate("20150619T165438Z"));
+    assert_eq!(
+        *task.uuid(), Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
     );
-    assert!(task.modified() == Some(&mkdate("20160327T164007Z")));
-    assert!(task.project() == Some(&String::from("someproject")));
+    assert_eq!(task.modified(), Some(&mkdate("20160327T164007Z")));
+    assert_eq!(task.project(), Some(&String::from("someproject")));
     if let Some(tags) = task.tags() {
         for tag in tags {
             let any_tag = ["some", "tags", "are", "here"].iter().any(|t| tag == *t);
@@ -180,7 +180,7 @@ fn test_one_single() {
         panic!("Tags completely missing");
     }
 
-    assert!(task.wait() == Some(&mkdate("20160508T164007Z")));
+    assert_eq!(task.wait(), Some(&mkdate("20160508T164007Z")));
 }
 
 #[test]
@@ -191,11 +191,11 @@ fn test_two_single() {
 {"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}
 {"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}"#;
     let imported = import_tasks(BufReader::new(s.as_bytes()));
-    assert!(imported.len() == 2);
+    assert_eq!(imported.len(), 2);
     assert!(imported[0].is_ok());
     assert!(imported[1].is_ok());
     let import0 = imported[0].as_ref().unwrap();
     let import1 = imported[1].as_ref().unwrap();
-    assert!(import0.status() == &TaskStatus::Waiting);
-    assert!(import1.status() == &TaskStatus::Waiting);
+    assert_eq!(*import0.status(), TaskStatus::Waiting);
+    assert_eq!(*import1.status(), TaskStatus::Waiting);
 }
