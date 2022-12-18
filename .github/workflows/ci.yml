@@ -9,17 +9,13 @@ jobs:
     strategy:
       matrix:
         rust:
-          - nightly
-          - beta
-          - stable
           - 1.60.0
+          - stable
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: ${{ matrix.rust }}
-          override: true
       - uses: actions-rs/cargo@v1
         with:
           command: check
@@ -31,7 +27,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.60.0
       - run: rustup component add rustfmt
@@ -41,37 +37,19 @@ jobs:
           command: fmt
           args: -- --check
 
-  dco-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 0
-      - name: Setup Python
-        uses: actions/setup-python@v4.0.0
-        with:
-          python-version: '3.x'
-      - name: Install gitlint
-        run: pip install gitlint
-      - run: gitlint --commits $(git merge-base origin/master HEAD)..
-
   test:
     name: Test Suite
     runs-on: ubuntu-latest
     strategy:
       matrix:
         rust:
-          - nightly
-          - beta
-          - stable
           - 1.60.0
+          - stable
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: ${{ matrix.rust }}
-          override: true
       - run: sudo apt-get update && sudo apt-get install -y taskwarrior
       - uses: actions-rs/cargo@v1
         with:
@@ -89,10 +67,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.60.0
-          override: true
       - uses: swatinem/rust-cache@v1
       - run: rustup component add clippy
       - name: cargo-clippy
@@ -104,7 +81,6 @@ jobs:
     needs:
       - check
       - clippy
-      - dco-check
       - test
     runs-on: ubuntu-latest
     steps:
