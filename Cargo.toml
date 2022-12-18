@@ -9,7 +9,7 @@ authors = ["Matthias Beyer <mail@beyermatthias.de>",
 description = "Crate to work with taskwarrior exported JSON"
 keywords = ["json", "taskwarrior", "todo", "import", "export"]
 
-repository    = "https://git.beyermatthi.as/task-hookrs"
+repository    = "https://github.com/matthiasbeyer/task-hookrs"
 readme        = "./README.md"
 license       = "MPL-2.0"
 
