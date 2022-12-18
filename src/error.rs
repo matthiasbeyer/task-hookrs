@@ -7,21 +7,29 @@
 //! Definitions for error handling with failure
 
 /// Failure error kind type, defining error messages
-#[derive(Debug, Clone, Eq, PartialEq, failure::Fail)]
-pub enum ErrorKind {
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
     /// Error kind indicating that the JSON parser failed
-    #[fail(display = "Failed to create a Task from JSON")]
+    #[error("Failed to create a Task from JSON")]
     ParserError,
 
     /// Error kind indicating that the Reader failed to read something
-    #[fail(display = "Failed to read tasks from a Reader")]
+    #[error("Failed to read tasks from a Reader")]
     ReaderError,
 
     /// Error kind indicating that a call to the task warrior binary failed
-    #[fail(display = "There was a problem while calling the external 'task' binary")]
+    #[error("There was a problem while calling the external 'task' binary")]
     TaskCmdError,
 
     /// Error kind indicating that a conversion to JSON failed
-    #[fail(display = "A Task could not be converted to JSON")]
+    #[error("A Task could not be converted to JSON")]
     SerializeError,
+
+    /// Error wrapper for std::io::Error
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+
+    /// Error wrapper for serde_json::Error
+    #[error(transparent)]
+    SerdeJson(#[from] serde_json::Error),
 }
