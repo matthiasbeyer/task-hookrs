@@ -4,6 +4,11 @@ This changelog was started with the 0.4.0 release.
 
 ## Next
 
+## 0.8.0
+
+* Replace "failure" with "thiserror"
+* Cleanup the codebase for rust edition 2021
+
 ## 0.7.0
 
 * Bugfix: "imask" field in taskwarrior is a float, change type to f64.
