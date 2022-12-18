@@ -37,11 +37,7 @@ pub fn import_tasks<BR: BufRead>(r: BR) -> Vec<Result<Task>> {
     let mut vt = Vec::new();
     for line in r.lines() {
         if let Err(err) = line {
-            vt.push(
-                Err(err)
-                    .context(EK::ReaderError)
-                    .map_err(Error::from),
-            );
+            vt.push(Err(err).context(EK::ReaderError).map_err(Error::from));
             continue;
         }
         // Unwrap is safe because of continue above
@@ -167,7 +163,8 @@ fn test_one_single() {
     assert_eq!(task.description(), "some description");
     assert_eq!(*task.entry(), mkdate("20150619T165438Z"));
     assert_eq!(
-        *task.uuid(), Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
+        *task.uuid(),
+        Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
     );
     assert_eq!(task.modified(), Some(&mkdate("20160327T164007Z")));
     assert_eq!(task.project(), Some(&String::from("someproject")));

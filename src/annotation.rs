@@ -20,10 +20,7 @@ pub struct Annotation {
 impl Annotation {
     /// Create a new Annotation object
     pub fn new(entry: Date, description: String) -> Annotation {
-        Annotation {
-            entry,
-            description,
-        }
+        Annotation { entry, description }
     }
 
     /// Get the entry date
