@@ -131,10 +131,10 @@ fn test_two() {
 
 #[test]
 fn test_one_single() {
-    use chrono::NaiveDateTime;
     use crate::date::Date;
     use crate::date::TASKWARRIOR_DATETIME_TEMPLATE;
     use crate::status::TaskStatus;
+    use chrono::NaiveDateTime;
     use uuid::Uuid;
     fn mkdate(s: &str) -> Date {
         let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);

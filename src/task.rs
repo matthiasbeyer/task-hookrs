@@ -41,7 +41,7 @@ use crate::urgency::Urgency;
 ///
 /// It is deserializeable and serializeable via serde_json, so importing and exporting taskwarrior
 /// tasks is simply serializing and deserializing objects of this type.
-#[derive(Debug, Clone, PartialEq, Builder)]
+#[derive(Debug, Clone, PartialEq, derive_builder::Builder)]
 #[builder(setter(into))]
 pub struct Task {
     /// The temporary assigned task id
@@ -774,7 +774,7 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
                 }
 
                 field => {
-                    debug!("Inserting '{}' as UDA", field);
+                    log::debug!("Inserting '{}' as UDA", field);
                     let uda_value: UDAValue = visitor.next_value()?;
                     uda.insert(UDAName::from(field), uda_value);
                 }
@@ -831,7 +831,7 @@ mod test {
 
     fn mklogger() {
         let _ = env_logger::init();
-        debug!("Env-logger enabled");
+        log::debug!("Env-logger enabled");
     }
 
     fn mkdate(s: &str) -> Date {

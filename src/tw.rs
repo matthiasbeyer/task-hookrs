@@ -10,10 +10,10 @@
 
 use crate::error::ErrorKind as EK;
 use crate::import::import;
+use crate::task::Task;
 use std::io::Write;
 use std::iter::once;
 use std::process::{Child, Command, Stdio};
-use crate::task::Task;
 
 use failure::Fallible as Result;
 use failure::ResultExt;

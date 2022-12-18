@@ -43,22 +43,6 @@
     while_true
 )]
 
-extern crate chrono;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-extern crate uuid;
-#[macro_use]
-extern crate derive_builder;
-#[macro_use]
-extern crate failure;
-
-#[cfg(test)]
-extern crate env_logger;
-#[macro_use]
-extern crate log;
-
 pub mod annotation;
 pub mod date;
 pub mod error;

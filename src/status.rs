@@ -9,7 +9,7 @@
 use std::fmt::{Display, Error as FmtError, Formatter};
 
 /// Enum for status taskwarrior supports.
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub enum TaskStatus {
     /// Pending status type
     #[serde(rename = "pending")]

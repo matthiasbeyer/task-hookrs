@@ -7,7 +7,7 @@
 //! Definitions for error handling with failure
 
 /// Failure error kind type, defining error messages
-#[derive(Debug, Clone, Eq, PartialEq, Fail)]
+#[derive(Debug, Clone, Eq, PartialEq, failure::Fail)]
 pub enum ErrorKind {
     /// Error kind indicating that the JSON parser failed
     #[fail(display = "Failed to create a Task from JSON")]
