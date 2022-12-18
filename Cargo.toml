@@ -13,6 +13,8 @@ repository    = "https://github.com/matthiasbeyer/task-hookrs"
 readme        = "./README.md"
 license       = "MPL-2.0"
 
+edition = "2018"
+
 [badges]
 maintenance = { status = "passively-maintained" }
 
