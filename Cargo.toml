@@ -14,7 +14,6 @@ readme        = "./README.md"
 license       = "MPL-2.0"
 
 [badges]
-travis-ci   = { repository = "matthiasbeyer/task-hookrs", branch = "master" }
 maintenance = { status = "passively-maintained" }
 
 [dependencies]
