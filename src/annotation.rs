@@ -6,7 +6,7 @@
 
 //! Module containing types and functions for annotations of tasks
 
-use date::Date;
+use crate::date::Date;
 
 /// Annotation type for task annotations.
 /// Each annotation in taskwarrior consists of a date and a description,

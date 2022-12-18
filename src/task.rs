@@ -16,14 +16,14 @@ use serde::{Deserialize, Deserializer};
 use serde::{Serialize, Serializer};
 use uuid::Uuid;
 
-use annotation::Annotation;
-use date::Date;
-use priority::TaskPriority;
-use project::Project;
-use status::TaskStatus;
-use tag::Tag;
-use uda::{UDAName, UDAValue, UDA};
-use urgency::Urgency;
+use crate::annotation::Annotation;
+use crate::date::Date;
+use crate::priority::TaskPriority;
+use crate::project::Project;
+use crate::status::TaskStatus;
+use crate::tag::Tag;
+use crate::uda::{UDAName, UDAValue, UDA};
+use crate::urgency::Urgency;
 
 /// Task type
 ///
@@ -818,12 +818,12 @@ impl<'de> Visitor<'de> for TaskDeserializeVisitor {
 
 #[cfg(test)]
 mod test {
-    use annotation::Annotation;
-    use date::Date;
-    use date::TASKWARRIOR_DATETIME_TEMPLATE;
-    use status::TaskStatus;
-    use task::Task;
-    use uda::UDAValue;
+    use crate::annotation::Annotation;
+    use crate::date::Date;
+    use crate::date::TASKWARRIOR_DATETIME_TEMPLATE;
+    use crate::status::TaskStatus;
+    use crate::task::Task;
+    use crate::uda::UDAValue;
 
     use chrono::NaiveDateTime;
     use serde_json;
@@ -1099,7 +1099,7 @@ mod test {
 
     #[test]
     fn test_builder_simple() {
-        use task::TaskBuilder;
+        use crate::task::TaskBuilder;
 
         let t = TaskBuilder::default()
             .description("test")
@@ -1115,8 +1115,8 @@ mod test {
     }
     #[test]
     fn test_builder_extensive() {
-        use task::TaskBuilder;
-        use uda::{UDAValue, UDA};
+        use crate::task::TaskBuilder;
+        use crate::uda::{UDAValue, UDA};
         let mut uda = UDA::new();
         uda.insert(
             "test_str_uda".into(),
@@ -1155,7 +1155,7 @@ mod test {
     }
     #[test]
     fn test_builder_defaults() {
-        use task::TaskBuilder;
+        use crate::task::TaskBuilder;
         assert!(TaskBuilder::default()
             .description("Nice Task")
             .build()
@@ -1164,7 +1164,7 @@ mod test {
 
     #[test]
     fn test_builder_fail() {
-        use task::TaskBuilder;
+        use crate::task::TaskBuilder;
         assert!(TaskBuilder::default().build().is_err());
     }
 }

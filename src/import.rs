@@ -14,8 +14,8 @@ use failure::Fallible as Result;
 use failure::ResultExt;
 use serde_json;
 
-use error::ErrorKind as EK;
-use task::Task;
+use crate::error::ErrorKind as EK;
+use crate::task::Task;
 
 /// Import taskwarrior-exported JSON. This expects an JSON Array of objects, as exported by
 /// taskwarrior.
@@ -132,9 +132,9 @@ fn test_two() {
 #[test]
 fn test_one_single() {
     use chrono::NaiveDateTime;
-    use date::Date;
-    use date::TASKWARRIOR_DATETIME_TEMPLATE;
-    use status::TaskStatus;
+    use crate::date::Date;
+    use crate::date::TASKWARRIOR_DATETIME_TEMPLATE;
+    use crate::status::TaskStatus;
     use uuid::Uuid;
     fn mkdate(s: &str) -> Date {
         let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);
@@ -182,7 +182,7 @@ fn test_one_single() {
 
 #[test]
 fn test_two_single() {
-    use status::TaskStatus;
+    use crate::status::TaskStatus;
     use std::io::BufReader;
     let s = r#"
 {"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}

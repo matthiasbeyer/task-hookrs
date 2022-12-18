@@ -8,12 +8,12 @@
 //! in your path. This will always call task and never interact with your `.task` directory itself.
 //! (This is in accordance with the taskwarrior api guide lines.)
 
-use error::ErrorKind as EK;
-use import::import;
+use crate::error::ErrorKind as EK;
+use crate::import::import;
 use std::io::Write;
 use std::iter::once;
 use std::process::{Child, Command, Stdio};
-use task::Task;
+use crate::task::Task;
 
 use failure::Fallible as Result;
 use failure::ResultExt;
