@@ -7,11 +7,12 @@ use std::io::stdin;
 
 use task_hookrs::import::import;
 use task_hookrs::status::TaskStatus;
+use task_hookrs::task::Task;
 
 fn main() {
     let mut tasks = import(stdin()).unwrap();
     assert_eq!(tasks.len(), 1);
-    let t = tasks.pop().unwrap();
+    let t: Task = tasks.pop().unwrap();
     assert_eq!(*t.status(), TaskStatus::Pending);
     assert_eq!(*t.description(), "Test task".to_owned());
     assert_eq!(t.priority(), None);

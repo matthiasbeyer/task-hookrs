@@ -12,10 +12,10 @@
 //! ```
 //!   use std::io::stdin;
 //!
-//!   use task_hookrs::task::Task;
+//!   use task_hookrs::task::{Task, TW26};
 //!   use task_hookrs::import::import;
 //!
-//!   if let Ok(tasks) = import(stdin()) {
+//!   if let Ok(tasks) = import::<TW26, _>(stdin()) {
 //!       for task in tasks {
 //!           println!("Task: {}, entered {:?} is {} -> {}",
 //!                     task.uuid(),

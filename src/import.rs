@@ -12,21 +12,21 @@ use std::io::Read;
 use serde_json;
 
 use crate::error::Error;
-use crate::task::Task;
+use crate::task::{Task, TaskWarriorVersion};
 
 /// Import taskwarrior-exported JSON. This expects an JSON Array of objects, as exported by
 /// taskwarrior.
-pub fn import<R: Read>(r: R) -> Result<Vec<Task>, Error> {
+pub fn import<T: TaskWarriorVersion, R: Read>(r: R) -> Result<Vec<Task<T>>, Error> {
     serde_json::from_reader(r).map_err(Error::from)
 }
 
 /// Import a single JSON-formatted Task
-pub fn import_task(s: &str) -> Result<Task, Error> {
+pub fn import_task<T: TaskWarriorVersion>(s: &str) -> Result<Task<T>, Error> {
     serde_json::from_str(s).map_err(Error::from)
 }
 
 /// Reads line by line and tries to parse a task-object per line.
-pub fn import_tasks<BR: BufRead>(r: BR) -> Vec<Result<Task, Error>> {
+pub fn import_tasks<T: TaskWarriorVersion, BR: BufRead>(r: BR) -> Vec<Result<Task<T>, Error>> {
     let mut vt = Vec::new();
     for line in r.lines() {
         if let Err(err) = line {
@@ -43,9 +43,14 @@ pub fn import_tasks<BR: BufRead>(r: BR) -> Vec<Result<Task, Error>> {
     vt
 }
 
-#[test]
-fn test_one() {
-    let s = r#"
+#[cfg(test)]
+mod test {
+    use crate::import::{import, import_task, import_tasks};
+    use crate::task::{Task, TW25, TW26};
+
+    #[test]
+    fn test_one_tw25() {
+        let s = r#"
 [
     {
         "id": 1,
@@ -56,21 +61,48 @@ fn test_one() {
         "status": "waiting",
         "tags": ["some", "tags", "are", "here"],
         "uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0",
+        "depends": "8ca953d5-18b5-4eb9-bd56-18f2e5b752f0",
         "wait": "20160508T164007Z",
         "urgency": 0.583562
     }
 ]
 "#;
 
-    let imported = import(s.as_bytes());
-    assert!(imported.is_ok());
-    let imported = imported.unwrap();
-    assert!(imported.len() == 1);
-}
+        let imported = import::<TW25, _>(s.as_bytes());
+        assert!(imported.is_ok());
+        let imported = imported.unwrap();
+        assert!(imported.len() == 1);
+    }
 
-#[test]
-fn test_two() {
-    let s = r#"
+    #[test]
+    fn test_one_tw26() {
+        let s = r#"
+[
+    {
+        "id": 1,
+        "description": "some description",
+        "entry": "20150619T165438Z",
+        "modified": "20160327T164007Z",
+        "project": "someproject",
+        "status": "waiting",
+        "tags": ["some", "tags", "are", "here"],
+        "uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0",
+        "depends": ["8ca953d5-18b5-4eb9-bd56-18f2e5b752f0"],
+        "wait": "20160508T164007Z",
+        "urgency": 0.583562
+    }
+]
+"#;
+
+        let imported = import::<TW26, _>(s.as_bytes());
+        assert!(imported.is_ok());
+        let imported = imported.unwrap();
+        assert!(imported.len() == 1);
+    }
+
+    #[test]
+    fn test_two_tw25() {
+        let s = r#"
 [
     {
         "id"          : 1,
@@ -119,21 +151,21 @@ fn test_two() {
 
 "#;
 
-    assert!(import(s.as_bytes()).unwrap().len() == 3);
-}
-
-#[test]
-fn test_one_single() {
-    use crate::date::Date;
-    use crate::date::TASKWARRIOR_DATETIME_TEMPLATE;
-    use crate::status::TaskStatus;
-    use chrono::NaiveDateTime;
-    use uuid::Uuid;
-    fn mkdate(s: &str) -> Date {
-        let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);
-        Date::from(n.unwrap())
+        assert!(import::<TW25, _>(s.as_bytes()).unwrap().len() == 3);
     }
-    let s = r#"
+
+    #[test]
+    fn test_one_single_tw25() {
+        use crate::date::Date;
+        use crate::date::TASKWARRIOR_DATETIME_TEMPLATE;
+        use crate::status::TaskStatus;
+        use chrono::NaiveDateTime;
+        use uuid::Uuid;
+        fn mkdate(s: &str) -> Date {
+            let n = NaiveDateTime::parse_from_str(s, TASKWARRIOR_DATETIME_TEMPLATE);
+            Date::from(n.unwrap())
+        }
+        let s = r#"
 {
     "id": 1,
     "description": "some description",
@@ -147,45 +179,46 @@ fn test_one_single() {
     "urgency": 0.583562
 }
 "#;
-    let imported = import_task(s);
-    assert!(imported.is_ok());
+        let imported = import_task(s);
+        assert!(imported.is_ok());
 
-    // Check for every information
-    let task = imported.unwrap();
-    assert_eq!(*task.status(), TaskStatus::Waiting);
-    assert_eq!(task.description(), "some description");
-    assert_eq!(*task.entry(), mkdate("20150619T165438Z"));
-    assert_eq!(
-        *task.uuid(),
-        Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
-    );
-    assert_eq!(task.modified(), Some(&mkdate("20160327T164007Z")));
-    assert_eq!(task.project(), Some(&String::from("someproject")));
-    if let Some(tags) = task.tags() {
-        for tag in tags {
-            let any_tag = ["some", "tags", "are", "here"].iter().any(|t| tag == *t);
-            assert!(any_tag, "Tag {} missing", tag);
+        // Check for every information
+        let task: Task<TW25> = imported.unwrap();
+        assert_eq!(*task.status(), TaskStatus::Waiting);
+        assert_eq!(task.description(), "some description");
+        assert_eq!(*task.entry(), mkdate("20150619T165438Z"));
+        assert_eq!(
+            *task.uuid(),
+            Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
+        );
+        assert_eq!(task.modified(), Some(&mkdate("20160327T164007Z")));
+        assert_eq!(task.project(), Some(&String::from("someproject")));
+        if let Some(tags) = task.tags() {
+            for tag in tags {
+                let any_tag = ["some", "tags", "are", "here"].iter().any(|t| tag == *t);
+                assert!(any_tag, "Tag {} missing", tag);
+            }
+        } else {
+            panic!("Tags completely missing");
         }
-    } else {
-        panic!("Tags completely missing");
+
+        assert_eq!(task.wait(), Some(&mkdate("20160508T164007Z")));
     }
 
-    assert_eq!(task.wait(), Some(&mkdate("20160508T164007Z")));
-}
-
-#[test]
-fn test_two_single() {
-    use crate::status::TaskStatus;
-    use std::io::BufReader;
-    let s = r#"
+    #[test]
+    fn test_two_single_tw25() {
+        use crate::status::TaskStatus;
+        use std::io::BufReader;
+        let s = r#"
 {"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}
 {"id":1,"description":"some description","entry":"20150619T165438Z","modified":"20160327T164007Z","project":"someproject","status":"waiting","tags":["some","tags","are","here"],"uuid":"8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","wait":"20160508T164007Z","urgency":0.583562}"#;
-    let imported = import_tasks(BufReader::new(s.as_bytes()));
-    assert_eq!(imported.len(), 2);
-    assert!(imported[0].is_ok());
-    assert!(imported[1].is_ok());
-    let import0 = imported[0].as_ref().unwrap();
-    let import1 = imported[1].as_ref().unwrap();
-    assert_eq!(*import0.status(), TaskStatus::Waiting);
-    assert_eq!(*import1.status(), TaskStatus::Waiting);
+        let imported = import_tasks(BufReader::new(s.as_bytes()));
+        assert_eq!(imported.len(), 2);
+        assert!(imported[0].is_ok());
+        assert!(imported[1].is_ok());
+        let import0: &Task<TW25> = imported[0].as_ref().unwrap();
+        let import1 = imported[1].as_ref().unwrap();
+        assert_eq!(*import0.status(), TaskStatus::Waiting);
+        assert_eq!(*import1.status(), TaskStatus::Waiting);
+    }
 }

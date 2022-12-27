@@ -6,13 +6,11 @@
 
 //! Module containing `Task` type as well as trait implementations
 
-use std::fmt;
+use std::marker::PhantomData;
 use std::result::Result as RResult;
 
 use chrono::Utc;
-use serde::de::{Error, MapAccess, Visitor};
-use serde::ser::SerializeMap;
-use serde::{Deserialize, Deserializer};
+use serde::{de, Deserialize, Deserializer};
 use serde::{Serialize, Serializer};
 use uuid::Uuid;
 
@@ -22,8 +20,30 @@ use crate::priority::TaskPriority;
 use crate::project::Project;
 use crate::status::TaskStatus;
 use crate::tag::Tag;
-use crate::uda::{UDAName, UDAValue, UDA};
+use crate::uda::UDA;
 use crate::urgency::Urgency;
+
+/// Unit struct used to represent taskwarrior format 2.6.0 and newer.
+/// See [Task] for more information.
+#[derive(Debug, Clone)]
+pub struct TW26;
+
+/// Unit struct used to represent taskwarrior format 2.5.3 and older.
+/// See [Task] for more information.
+#[derive(Debug, Clone)]
+pub struct TW25;
+
+// Prevents folks outside this crate from implementing their own versions
+mod private {
+    pub trait Sealed {}
+    impl Sealed for super::TW26 {}
+    impl Sealed for super::TW25 {}
+}
+
+/// Trait used to represent taskwarrior version types
+pub trait TaskWarriorVersion: private::Sealed {}
+impl TaskWarriorVersion for TW26 {}
+impl TaskWarriorVersion for TW25 {}
 
 /// Task type
 ///
@@ -41,11 +61,17 @@ use crate::urgency::Urgency;
 ///
 /// It is deserializeable and serializeable via serde_json, so importing and exporting taskwarrior
 /// tasks is simply serializing and deserializing objects of this type.
-#[derive(Debug, Clone, PartialEq, derive_builder::Builder)]
+///
+/// As of taskwarrior version 2.6.0 and newer, the representation of `depends` has changed from
+/// being a comma seperated string of uuid's to being a proper json array. You can select which
+/// behaviour you want at compiletime by providing either [TW26] (the default) or [TW25] to `Task` as its
+/// type parameter.
+#[derive(Debug, Clone, PartialEq, derive_builder::Builder, Serialize, Deserialize)]
 #[builder(setter(into))]
-pub struct Task {
+pub struct Task<Version: TaskWarriorVersion + 'static = TW26> {
     /// The temporary assigned task id
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     id: Option<u64>,
 
     /// The status of the task
@@ -62,66 +88,93 @@ pub struct Task {
     description: String,
     /// A list of annotations with timestamps
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     annotations: Option<Vec<Annotation>>,
     /// The uuids of other tasks which have to be completed before this one becomes unblocked.
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(serialize_with = "serialize_depends::<_, Version>")]
+    #[serde(deserialize_with = "deserialize_depends::<_, Version>", default)]
     depends: Option<Vec<Uuid>>,
     /// The due date of the task
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     due: Option<Date>,
     /// When the task was last deleted or completed
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     end: Option<Date>,
     /// The imask is used internally for recurrence
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     imask: Option<f64>,
     /// The mask is used internally for recurrence
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     mask: Option<String>,
     /// When the task was last modified
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     modified: Option<Date>,
     /// A task can have a parent task
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     parent: Option<Uuid>,
     /// The priority of the task
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     priority: Option<TaskPriority>,
     /// A task can be part of a project. Typically of the form "project.subproject.subsubproject"
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     project: Option<Project>,
     /// The timespan after which this task should recur
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     recur: Option<String>,
     /// When the task becomes ready
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     scheduled: Option<Date>,
     /// When the task becomes active
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     start: Option<Date>,
     /// The tags associated with the task
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     tags: Option<Vec<Tag>>,
     /// When the recurrence stops
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     until: Option<Date>,
     /// This hides the task until the wait date
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     wait: Option<Date>,
     /// This contains the urgency of the task
     #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     urgency: Option<Urgency>,
 
     /// A map of user defined attributes
     #[builder(default)]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "UDA::is_empty")]
+    #[serde(flatten)]
     uda: UDA,
+
+    #[doc(hidden)]
+    #[builder(setter(skip))]
+    #[serde(skip)]
+    _version: PhantomData<Version>,
 }
 
 /*
  * TODO: We do not fail if the JSON parsing fails. This panics. We rely on taskwarrior to be nice
  * to us. I guess this should be fixed.
  */
-impl Task {
+impl<Version: TaskWarriorVersion> Task<Version> {
     /// Create a new Task instance
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -150,7 +203,7 @@ impl Task {
         wait: Option<Date>,
         urgency: Option<Urgency>,
         uda: UDA,
-    ) -> Task {
+    ) -> Task<Version> {
         Task {
             id,
             status,
@@ -176,6 +229,7 @@ impl Task {
             wait,
             urgency,
             uda,
+            _version: PhantomData,
         }
     }
 
@@ -546,273 +600,36 @@ impl Task {
     }
 }
 
-impl Serialize for Task {
-    fn serialize<S>(&self, serializer: S) -> RResult<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_map(None)?;
-        state.serialize_entry("status", &self.status)?;
-        state.serialize_entry("uuid", &self.uuid)?;
-        state.serialize_entry("entry", &self.entry)?;
-        state.serialize_entry("description", &self.description)?;
-
-        self.annotations
-            .as_ref()
-            .map(|v| state.serialize_entry("annotations", v));
-        self.tags.as_ref().map(|v| state.serialize_entry("tags", v));
-        self.id.as_ref().map(|v| state.serialize_entry("id", v));
-        self.recur
-            .as_ref()
-            .map(|ref v| state.serialize_entry("recur", v));
-        self.depends.as_ref().map(|v| {
-            let v: Vec<String> = v.iter().map(Uuid::to_string).collect();
-            state.serialize_entry("depends", &v.join(","))
-        });
-        self.due
-            .as_ref()
-            .map(|ref v| state.serialize_entry("due", v));
-        self.end
-            .as_ref()
-            .map(|ref v| state.serialize_entry("end", v));
-        self.imask
-            .as_ref()
-            .map(|ref v| state.serialize_entry("imask", v));
-        self.mask
-            .as_ref()
-            .map(|ref v| state.serialize_entry("mask", v));
-        self.modified
-            .as_ref()
-            .map(|ref v| state.serialize_entry("modified", v));
-        self.parent
-            .as_ref()
-            .map(|ref v| state.serialize_entry("parent", v));
-        self.priority
-            .as_ref()
-            .map(|ref v| state.serialize_entry("priority", v));
-        self.project
-            .as_ref()
-            .map(|ref v| state.serialize_entry("project", v));
-        self.scheduled
-            .as_ref()
-            .map(|ref v| state.serialize_entry("scheduled", v));
-        self.start
-            .as_ref()
-            .map(|ref v| state.serialize_entry("start", v));
-        self.until
-            .as_ref()
-            .map(|ref v| state.serialize_entry("until", v));
-        self.wait
-            .as_ref()
-            .map(|ref v| state.serialize_entry("wait", v));
-        self.urgency
-            .as_ref()
-            .map(|ref v| state.serialize_entry("urgency", v));
-
-        for (key, value) in self.uda().iter() {
-            state.serialize_entry(key, value)?;
-        }
-
-        state.end()
+fn serialize_depends<S, T: 'static>(
+    field: &Option<Vec<Uuid>>,
+    serializer: S,
+) -> RResult<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    if std::any::TypeId::of::<T>() == std::any::TypeId::of::<TW25>() {
+        let value = field.as_ref().unwrap();
+        let v: Vec<String> = value.iter().map(Uuid::to_string).collect();
+        serializer.serialize_str(&v.join(","))
+    } else {
+        field.serialize(serializer)
     }
 }
 
-impl<'de> Deserialize<'de> for Task {
-    fn deserialize<D>(deserializer: D) -> RResult<Task, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        static FIELDS: &[&str] = &[
-            "id",
-            "status",
-            "uuid",
-            "entry",
-            "description",
-            "annotations",
-            "depends",
-            "due",
-            "end",
-            "imask",
-            "mask",
-            "modified",
-            "parent",
-            "priority",
-            "project",
-            "recur",
-            "scheduled",
-            "start",
-            "tags",
-            "until",
-            "wait",
-            "urgency",
-            "uda",
-        ];
-        deserializer.deserialize_struct("Task", FIELDS, TaskDeserializeVisitor)
-    }
-}
-
-/// Helper type for task deserialization
-struct TaskDeserializeVisitor;
-
-impl<'de> Visitor<'de> for TaskDeserializeVisitor {
-    type Value = Task;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        write!(formatter, "A dictionary containing task properties")
-    }
-
-    fn visit_map<V>(self, mut visitor: V) -> RResult<Task, V::Error>
-    where
-        V: MapAccess<'de>,
-    {
-        let mut id = None;
-
-        let mut status = None;
-        let mut uuid = None;
-        let mut entry = None;
-        let mut description = None;
-
-        let mut annotations = None;
-        let mut depends = None;
-        let mut due = None;
-        let mut end = None;
-        let mut imask = None;
-        let mut mask = None;
-        let mut modified = None;
-        let mut parent = None;
-        let mut priority = None;
-        let mut project = None;
-        let mut recur = None;
-        let mut scheduled = None;
-        let mut start = None;
-        let mut tags = None;
-        let mut until = None;
-        let mut wait = None;
-        let mut urgency = None;
-        let mut uda = UDA::default();
-
-        loop {
-            let key: Option<String> = visitor.next_key()?;
-            if key.is_none() {
-                break;
-            }
-            let key = key.unwrap();
-
-            match &key[..] {
-                "id" => {
-                    id = Some(visitor.next_value()?);
-                }
-
-                "status" => {
-                    status = Some(visitor.next_value()?);
-                }
-                "uuid" => {
-                    uuid = Some(visitor.next_value()?);
-                }
-                "entry" => {
-                    entry = Some(visitor.next_value()?);
-                }
-                "description" => {
-                    description = Some(visitor.next_value()?);
-                }
-
-                "annotations" => {
-                    annotations = Some(visitor.next_value()?);
-                }
-                "depends" => {
-                    let raw: String = visitor.next_value()?;
-                    let mut uuids = vec![];
-                    for uuid in raw.split(',') {
-                        uuids.push(Uuid::parse_str(uuid).map_err(V::Error::custom)?);
-                    }
-                    depends = Some(uuids);
-                }
-                "due" => {
-                    due = Some(visitor.next_value()?);
-                }
-                "end" => {
-                    end = Some(visitor.next_value()?);
-                }
-                "imask" => {
-                    imask = Some(visitor.next_value()?);
-                }
-                "mask" => {
-                    mask = Some(visitor.next_value()?);
-                }
-                "modified" => {
-                    modified = Some(visitor.next_value()?);
-                }
-                "parent" => {
-                    parent = Some(visitor.next_value()?);
-                }
-                "priority" => {
-                    priority = Some(visitor.next_value()?);
-                }
-                "project" => {
-                    project = Some(visitor.next_value()?);
-                }
-                "recur" => {
-                    recur = Some(visitor.next_value()?);
-                }
-                "scheduled" => {
-                    scheduled = Some(visitor.next_value()?);
-                }
-                "start" => {
-                    start = Some(visitor.next_value()?);
-                }
-                "tags" => {
-                    tags = Some(visitor.next_value()?);
-                }
-                "until" => {
-                    until = Some(visitor.next_value()?);
-                }
-                "wait" => {
-                    wait = Some(visitor.next_value()?);
-                }
-                "urgency" => {
-                    urgency = Some(visitor.next_value()?);
-                }
-
-                field => {
-                    log::debug!("Inserting '{}' as UDA", field);
-                    let uda_value: UDAValue = visitor.next_value()?;
-                    uda.insert(UDAName::from(field), uda_value);
-                }
-            }
+fn deserialize_depends<'de, D, T: 'static>(deserializer: D) -> RResult<Option<Vec<Uuid>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    if std::any::TypeId::of::<T>() == std::any::TypeId::of::<TW25>() {
+        let raw: String = String::deserialize(deserializer)?;
+        let mut uuids = vec![];
+        for uuid in raw.split(',') {
+            uuids.push(Uuid::parse_str(uuid).map_err(de::Error::custom)?);
         }
-
-        let status = status.ok_or_else(|| V::Error::missing_field("status"))?;
-        let uuid = uuid.ok_or_else(|| V::Error::missing_field("uuid"))?;
-        let entry = entry.ok_or_else(|| V::Error::missing_field("entry"))?;
-        let description = description.ok_or_else(|| V::Error::missing_field("description"))?;
-
-        let task = Task::new(
-            id,
-            status,
-            uuid,
-            entry,
-            description,
-            annotations,
-            depends,
-            due,
-            end,
-            imask,
-            mask,
-            modified,
-            parent,
-            priority,
-            project,
-            recur,
-            scheduled,
-            start,
-            tags,
-            until,
-            wait,
-            urgency,
-            uda,
-        );
-
-        Ok(task)
+        Ok(Some(uuids))
+    } else {
+        let value: Option<Vec<Uuid>> = Option::deserialize(deserializer)?;
+        Ok(value)
     }
 }
 
@@ -822,12 +639,12 @@ mod test {
     use crate::date::Date;
     use crate::date::TASKWARRIOR_DATETIME_TEMPLATE;
     use crate::status::TaskStatus;
-    use crate::task::Task;
+    use crate::task::{Task, TW25, TW26};
     use crate::uda::UDAValue;
 
     use chrono::NaiveDateTime;
     use serde_json;
-    use uuid::Uuid;
+    use uuid::{uuid, Uuid};
 
     fn mklogger() {
         let _ = env_logger::init();
@@ -880,8 +697,7 @@ mod test {
     }
 
     #[test]
-    fn test_deser_more() {
-        mklogger();
+    fn test_deser_more_tw26() {
         let s = r#"{
 "id": 1,
 "description": "some description",
@@ -891,15 +707,11 @@ mod test {
 "status": "waiting",
 "tags": ["some", "tags", "are", "here"],
 "uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0",
-"depends": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0,5a04bb1e-3f4b-49fb-b9ba-44407ca223b5",
+"depends": ["8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","5a04bb1e-3f4b-49fb-b9ba-44407ca223b5"],
 "wait": "20160508T164007Z",
 "urgency": 0.583562
 }"#;
-
-        println!("{}", s);
-
         let task = serde_json::from_str(s);
-        println!("{:?}", task);
         assert!(task.is_ok());
         let task: Task = task.unwrap();
 
@@ -921,6 +733,92 @@ mod test {
             }
         } else {
             panic!("Tags completely missing");
+        }
+
+        assert_eq!(task.wait(), Some(&mkdate("20160508T164007Z")));
+
+        if let Some(depends) = task.depends() {
+            assert_eq!(depends.len(), 2);
+            assert!(depends.contains(&uuid!("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0")));
+            assert!(depends.contains(&uuid!("5a04bb1e-3f4b-49fb-b9ba-44407ca223b5")));
+        } else {
+            panic!("Depends completely missing");
+        }
+
+        assert_eq!(task.wait(), Some(&mkdate("20160508T164007Z")));
+
+        let back = serde_json::to_string(&task).unwrap();
+
+        assert!(back.contains("description"));
+        assert!(back.contains("some description"));
+        assert!(back.contains("entry"));
+        assert!(back.contains("20150619T165438Z"));
+        assert!(back.contains("project"));
+        assert!(back.contains("someproject"));
+        assert!(back.contains("status"));
+        assert!(back.contains("waiting"));
+        assert!(back.contains("tags"));
+        assert!(back.contains("some"));
+        assert!(back.contains("tags"));
+        assert!(back.contains("are"));
+        assert!(back.contains("here"));
+        assert!(back.contains("uuid"));
+        assert!(back.contains("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0"));
+        assert!(back.contains(
+            r#"["8ca953d5-18b4-4eb9-bd56-18f2e5b752f0","5a04bb1e-3f4b-49fb-b9ba-44407ca223b5"]"#,
+        ));
+    }
+
+    #[test]
+    fn test_deser_more_tw25() {
+        mklogger();
+        let s = r#"{
+"id": 1,
+"description": "some description",
+"entry": "20150619T165438Z",
+"modified": "20160327T164007Z",
+"project": "someproject",
+"status": "waiting",
+"tags": ["some", "tags", "are", "here"],
+"uuid": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0",
+"depends": "8ca953d5-18b4-4eb9-bd56-18f2e5b752f0,5a04bb1e-3f4b-49fb-b9ba-44407ca223b5",
+"wait": "20160508T164007Z",
+"urgency": 0.583562
+}"#;
+
+        println!("{}", s);
+
+        let task = serde_json::from_str(s);
+        println!("{:?}", task);
+        assert!(task.is_ok());
+        let task: Task<TW25> = task.unwrap();
+
+        assert_eq!(*task.status(), TaskStatus::Waiting);
+        assert_eq!(task.description(), "some description");
+        assert_eq!(*task.entry(), mkdate("20150619T165438Z"));
+        assert_eq!(
+            *task.uuid(),
+            Uuid::parse_str("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0").unwrap()
+        );
+        assert_eq!(task.urgency(), Some(&0.583562));
+        assert_eq!(task.modified(), Some(&mkdate("20160327T164007Z")));
+        assert_eq!(task.project(), Some(&String::from("someproject")));
+
+        if let Some(tags) = task.tags() {
+            for tag in tags {
+                let any_tag = ["some", "tags", "are", "here"].iter().any(|t| tag == *t);
+                assert!(any_tag, "Tag {} missing", tag);
+            }
+        } else {
+            panic!("Tags completely missing");
+        }
+
+        if let Some(depends) = task.depends() {
+            assert_eq!(depends.len(), 2);
+            assert!(depends.contains(&uuid!("8ca953d5-18b4-4eb9-bd56-18f2e5b752f0")));
+            assert!(depends.contains(&uuid!("5a04bb1e-3f4b-49fb-b9ba-44407ca223b5")));
+        } else {
+            panic!("Depends completely missing");
         }
 
         assert_eq!(task.wait(), Some(&mkdate("20160508T164007Z")));
@@ -1018,7 +916,7 @@ mod test {
         let task = serde_json::from_str(s);
         println!("{:?}", task);
         assert!(task.is_ok());
-        let task: Task = task.unwrap();
+        let task: Task<TW25> = task.unwrap();
 
         let str_uda = task.uda().get(&"test_str_uda".to_owned());
         assert!(str_uda.is_some());
@@ -1101,7 +999,7 @@ mod test {
     fn test_builder_simple() {
         use crate::task::TaskBuilder;
 
-        let t = TaskBuilder::default()
+        let t = TaskBuilder::<TW25>::default()
             .description("test")
             .entry(mkdate("20150619T165438Z"))
             .build();
@@ -1116,6 +1014,7 @@ mod test {
     #[test]
     fn test_builder_extensive() {
         use crate::task::TaskBuilder;
+        use crate::task::TW25;
         use crate::uda::{UDAValue, UDA};
         let mut uda = UDA::new();
         uda.insert(
@@ -1124,7 +1023,7 @@ mod test {
         );
         uda.insert("test_int_uda".into(), UDAValue::U64(1234));
         uda.insert("test_float_uda".into(), UDAValue::F64(-17.1234));
-        let t = TaskBuilder::default()
+        let t = TaskBuilder::<TW25>::default()
             .description("test")
             .entry(mkdate("20150619T165438Z"))
             .id(192)
@@ -1156,7 +1055,7 @@ mod test {
     #[test]
     fn test_builder_defaults() {
         use crate::task::TaskBuilder;
-        assert!(TaskBuilder::default()
+        assert!(TaskBuilder::<TW25>::default()
             .description("Nice Task")
             .build()
             .is_ok());
@@ -1165,6 +1064,71 @@ mod test {
     #[test]
     fn test_builder_fail() {
         use crate::task::TaskBuilder;
-        assert!(TaskBuilder::default().build().is_err());
+        assert!(TaskBuilder::<TW25>::default().build().is_err());
+    }
+
+    const FIELD_NAMES_TO_NOT_SERIALIZE: [&str; 20] = [
+        r#""id":"#,
+        r#"""annotations:""#,
+        r#""depends:""#,
+        r#""due:""#,
+        r#""end:""#,
+        r#""imask:""#,
+        r#""mask:""#,
+        r#""modified:""#,
+        r#""parent:""#,
+        r#""priority:""#,
+        r#""project:""#,
+        r#""recur:""#,
+        r#""scheduled:""#,
+        r#""start:""#,
+        r#""tags:""#,
+        r#""until:""#,
+        r#""wait:""#,
+        r#""urgency:""#,
+        r#""uda:""#,
+        r#""_version:""#,
+    ];
+
+    #[test]
+    fn test_null_fields_not_serialized_tw25() {
+        use crate::task::TaskBuilder;
+
+        let task = TaskBuilder::<TW25>::default()
+            .description("Test Task")
+            .build()
+            .expect("Task to be built");
+
+        let task_as_str = serde_json::to_string_pretty(&task).expect("Task serialized as string");
+
+        for field_name in FIELD_NAMES_TO_NOT_SERIALIZE {
+            assert!(
+                !task_as_str.contains(field_name),
+                "'{}' should not have been in {}",
+                field_name,
+                task_as_str
+            );
+        }
+    }
+
+    #[test]
+    fn test_null_fields_not_serialized_tw26() {
+        use crate::task::TaskBuilder;
+
+        let task = TaskBuilder::<TW26>::default()
+            .description("Test Task")
+            .build()
+            .expect("Task to be built");
+
+        let task_as_str = serde_json::to_string_pretty(&task).expect("Task serialized as string");
+
+        for field_name in FIELD_NAMES_TO_NOT_SERIALIZE {
+            assert!(
+                !task_as_str.contains(field_name),
+                "'{}' should not have been in {}",
+                field_name,
+                task_as_str
+            );
+        }
     }
 }
