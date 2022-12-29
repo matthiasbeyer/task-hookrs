@@ -5,6 +5,7 @@ extern crate uuid;
 
 use task_hookrs::status::TaskStatus;
 use task_hookrs::task::Task;
+use task_hookrs::task::TW26;
 use task_hookrs::uda::UDA;
 
 use chrono::NaiveDateTime;
@@ -14,7 +15,7 @@ use uuid::Uuid;
 fn main() {
     let uuid = Uuid::nil();
     let date = NaiveDateTime::parse_from_str("2016-12-31 12:13:14", "%Y-%m-%d %H:%M:%S").unwrap();
-    let t = Task::new(
+    let t: Task<TW26> = Task::new(
         Some(12),
         TaskStatus::Pending,
         uuid,
