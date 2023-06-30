@@ -647,7 +647,7 @@ mod test {
     use uuid::{uuid, Uuid};
 
     fn mklogger() {
-        let _ = env_logger::init();
+        env_logger::init();
         log::debug!("Env-logger enabled");
     }
 
