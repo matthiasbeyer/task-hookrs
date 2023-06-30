@@ -4,6 +4,11 @@ This changelog was started with the 0.4.0 release.
 
 ## Next
 
+## 0.9.0
+
+* Support for taskwarrior 2.6.0 serialization format
+* MSRV was updated to 1.63.0
+
 ## 0.8.0
 
 * Replace "failure" with "thiserror"
