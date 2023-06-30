@@ -15,6 +15,10 @@
 you can write taskwarrior hooks without having to deal with the JSON
 import/export foo by simply using this crate.
 
+# MSRV
+
+1.63.0
+
 # License
 
     task-hookrs - A Rust library for writing taskwarrior hooks and general interfacing with taskwarrior
