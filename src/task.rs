@@ -308,7 +308,7 @@ impl<Version: TaskWarriorVersion> Task<Version> {
     }
 
     /// Set depends
-    pub fn set_depends<T, U>(&mut self, new: Option<T>)
+    pub fn set_depends<T>(&mut self, new: Option<T>)
     where
         T: IntoIterator,
         T::Item: Into<Uuid>,
