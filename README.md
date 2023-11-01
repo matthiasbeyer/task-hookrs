@@ -17,7 +17,7 @@ import/export foo by simply using this crate.
 
 # MSRV
 
-1.63.0
+1.65.0
 
 # License
 
