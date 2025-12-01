@@ -874,7 +874,7 @@ mod test {
 
         assert_eq!(task.urgency(), Some(&-5.0));
 
-        let all_annotations = vec![
+        let all_annotations = [
             Annotation::new(mkdate("20160423T125911Z"), String::from("An Annotation")),
             Annotation::new(
                 mkdate("20160423T125926Z"),
