@@ -29,4 +29,4 @@ derive_builder = "0.20.0"
 thiserror = "2"
 
 [dev-dependencies]
-env_logger = "0.10"
+env_logger = "0.11"
